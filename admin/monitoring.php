@@ -158,7 +158,7 @@ include '../includes/header.php';
             </div>
             
             <div style="margin-top: 20px;">
-                <a href="api/health.php" target="_blank" class="btn btn-secondary">
+                <a href="../api/health.php" target="_blank" class="btn btn-secondary">
                     <i class="fas fa-heartbeat"></i> View Health Check
                 </a>
             </div>
