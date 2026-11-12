@@ -91,7 +91,7 @@ include '../includes/header.php';
         <h1 class="card-title">
             <i class="fas fa-chart-line"></i> License Analytics
         </h1>
-        <form method="GET" style="display: flex; gap: 10px; align-items: center;">
+        <form method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <input type="date" name="date_from" value="<?= htmlspecialchars($date_from) ?>" class="form-control">
             <span>to</span>
             <input type="date" name="date_to" value="<?= htmlspecialchars($date_to) ?>" class="form-control">
@@ -101,7 +101,7 @@ include '../includes/header.php';
         </form>
     </div>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="dashboard-grid">
         <!-- Status Distribution Chart -->
         <div class="card">
             <div class="card-header">
@@ -109,8 +109,8 @@ include '../includes/header.php';
                     <i class="fas fa-pie-chart"></i> License Status Distribution
                 </h2>
             </div>
-            <div style="padding: 20px;">
-                <canvas id="statusChart" style="max-height: 300px;"></canvas>
+            <div class="chart-box">
+                <canvas id="statusChart"></canvas>
             </div>
         </div>
         
@@ -121,13 +121,13 @@ include '../includes/header.php';
                     <i class="fas fa-box"></i> Top Products
                 </h2>
             </div>
-            <div style="padding: 20px;">
-                <canvas id="productsChart" style="max-height: 300px;"></canvas>
+            <div class="chart-box">
+                <canvas id="productsChart"></canvas>
             </div>
         </div>
     </div>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+    <div class="dashboard-grid">
         <!-- Licenses Created Over Time -->
         <div class="card">
             <div class="card-header">
@@ -135,8 +135,8 @@ include '../includes/header.php';
                     <i class="fas fa-chart-area"></i> Licenses Created Over Time
                 </h2>
             </div>
-            <div style="padding: 20px;">
-                <canvas id="createdChart" style="max-height: 300px;"></canvas>
+            <div class="chart-box">
+                <canvas id="createdChart"></canvas>
             </div>
         </div>
         
@@ -147,8 +147,8 @@ include '../includes/header.php';
                     <i class="fas fa-chart-line"></i> Activations Over Time
                 </h2>
             </div>
-            <div style="padding: 20px;">
-                <canvas id="activationsChart" style="max-height: 300px;"></canvas>
+            <div class="chart-box">
+                <canvas id="activationsChart"></canvas>
             </div>
         </div>
     </div>
@@ -160,14 +160,41 @@ include '../includes/header.php';
                 <i class="fas fa-calendar-alt"></i> Expiration Timeline
             </h2>
         </div>
-        <div style="padding: 20px;">
-            <canvas id="expirationChart" style="max-height: 300px;"></canvas>
+        <div class="chart-box">
+            <canvas id="expirationChart"></canvas>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
+// Warna grafik diambil dari token tema supaya sama dengan desain (dan ikut mode gelap)
+const cssVar = (name, fallback) => (getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback);
+const C = {
+    brand: cssVar('--brand', '#2563eb'),
+    err: cssVar('--err', '#b42318'),
+    warn: cssVar('--warn', '#b54708'),
+    neutral: cssVar('--n-400', '#98a2b3'),
+    lilac: '#6a53b8',
+    peach: '#e08a4a',
+    text: cssVar('--text-muted', '#667085'),
+    grid: cssVar('--border-soft', '#eceff4'),
+    surface: cssVar('--bg-surface', '#ffffff')
+};
+const alpha = (hex, a) => {
+    const m = /^#([0-9a-f]{6})$/i.exec(hex);
+    if (!m) return hex;
+    const n = parseInt(m[1], 16);
+    return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+};
+Chart.defaults.font.family = cssVar('--font-sans', 'Ubuntu, sans-serif');
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = C.grid;
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.boxHeight = 12;
+Chart.defaults.elements.arc.borderColor = C.surface;
+const STATUS_COLORS = { active: C.brand, inactive: C.err, expired: C.warn, suspended: C.neutral };
+
 // Status Distribution Pie Chart
 const statusCtx = document.getElementById('statusChart').getContext('2d');
 const statusData = <?= json_encode($status_dist) ?>;
@@ -177,12 +204,8 @@ new Chart(statusCtx, {
         labels: Object.keys(statusData),
         datasets: [{
             data: Object.values(statusData),
-            backgroundColor: [
-                '#46b450', // active - green
-                '#dc3232', // inactive - red
-                '#f0b849', // expired - yellow
-                '#2271b1'  // suspended - blue
-            ]
+            // Warna dipetakan per nama status, bukan per urutan data
+            backgroundColor: Object.keys(statusData).map(s => STATUS_COLORS[s] || C.lilac)
         }]
     },
     options: {
@@ -201,7 +224,9 @@ new Chart(productsCtx, {
         datasets: [{
             label: 'Licenses',
             data: productsData.map(p => p.count),
-            backgroundColor: '#2271b1'
+            backgroundColor: C.brand,
+            borderRadius: 6,
+            maxBarThickness: 48
         }]
     },
     options: {
@@ -223,8 +248,9 @@ new Chart(createdCtx, {
         datasets: [{
             label: 'Licenses Created',
             data: createdData.map(d => d.count),
-            borderColor: '#2271b1',
-            backgroundColor: 'rgba(34, 113, 177, 0.1)',
+            borderColor: C.brand,
+            backgroundColor: alpha(C.brand, 0.1),
+            tension: 0.3,
             fill: true
         }]
     },
@@ -247,8 +273,9 @@ new Chart(activationsCtx, {
         datasets: [{
             label: 'Activations',
             data: activationData.map(d => d.count),
-            borderColor: '#46b450',
-            backgroundColor: 'rgba(70, 180, 80, 0.1)',
+            borderColor: C.lilac,
+            backgroundColor: alpha(C.lilac, 0.1),
+            tension: 0.3,
             fill: true
         }]
     },
@@ -271,11 +298,11 @@ new Chart(expirationCtx, {
         datasets: [{
             data: expirationData.map(e => e.count),
             backgroundColor: [
-                '#dc3232', // Expired
-                '#f0b849', // Expires in 7 days
-                '#ffa500', // Expires in 30 days
-                '#46b450', // Expires later
-                '#646970'  // Never
+                C.err,     // Expired
+                C.warn,    // Expires in 7 days
+                C.peach,   // Expires in 30 days
+                C.brand,   // Expires later
+                C.neutral  // Never
             ]
         }]
     },

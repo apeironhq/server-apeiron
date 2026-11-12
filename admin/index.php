@@ -124,7 +124,7 @@ include '../includes/header.php';
     </div>
 </div>
 
-<div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+<div class="dashboard-grid">
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">

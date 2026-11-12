@@ -7,6 +7,10 @@ $base_path = $is_admin ? '../' : '';
 $admin_path = $is_admin ? '' : 'admin/';
 $current_page = basename($_SERVER['PHP_SELF']);
 
+// Halaman turunan menandai menu induknya sebagai aktif di sidebar
+$__nav_parent = ['health.php' => 'monitoring.php', 'license-details.php' => 'licenses.php'];
+$__nav_current = $__nav_parent[$current_page] ?? $current_page;
+
 // Dipakai footer.php untuk menutup kerangka sidebar dengan benar
 $__app_shell_open = (bool) $show_header;
 
@@ -78,7 +82,7 @@ if (isset($_SESSION['admin_role']) && $_SESSION['admin_role'] === 'super_admin')
                 <ul class="nav-group">
                     <?php foreach ($__nav_main as $__item): ?>
                     <li>
-                        <a href="<?= $admin_path . $__item[0] ?>" class="nav-link <?= $current_page === $__item[0] ? 'active' : '' ?>">
+                        <a href="<?= $admin_path . $__item[0] ?>" class="nav-link <?= $__nav_current === $__item[0] ? 'active' : '' ?>">
                             <i class="fas <?= $__item[1] ?>"></i> <span><?= $__item[2] ?></span>
                         </a>
                     </li>
@@ -89,7 +93,7 @@ if (isset($_SESSION['admin_role']) && $_SESSION['admin_role'] === 'super_admin')
                 <ul class="nav-group">
                     <?php foreach ($__nav_more as $__item): ?>
                     <li>
-                        <a href="<?= $admin_path . $__item[0] ?>" class="nav-link <?= $current_page === $__item[0] ? 'active' : '' ?>">
+                        <a href="<?= $admin_path . $__item[0] ?>" class="nav-link <?= $__nav_current === $__item[0] ? 'active' : '' ?>">
                             <i class="fas <?= $__item[1] ?>"></i> <span><?= $__item[2] ?></span>
                         </a>
                     </li>

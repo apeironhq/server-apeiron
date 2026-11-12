@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
             required.forEach(input => {
                 if (!input.value.trim()) {
                     valid = false;
-                    input.style.borderColor = '#dc3232';
+                    input.style.borderColor = 'var(--err)';
                 } else {
                     input.style.borderColor = '';
                 }

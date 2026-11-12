@@ -975,6 +975,13 @@ select.form-control option {
     color: var(--text-heading);
 }
 
+/* Field di baris filter (header kartu) memakai lebar alami, bukan 100% */
+.card-header form .form-control {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .form-control-sm {
     min-height: var(--h-control-sm);
     padding: 4px 10px;
@@ -1036,6 +1043,12 @@ input[type="radio"] {
     border-bottom: 1px solid var(--border-soft);
     color: var(--text-body);
     vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Isi sel tidak dipatah per kata; tabel lebar digulir ke samping */
+.table th i {
+    margin-right: 4px;
 }
 
 .table th:first-child,
@@ -1344,8 +1357,313 @@ pre {
 }
 
 /* =================================================================
-   16. Responsif
+   16. Komponen halaman
    ================================================================= */
+
+/* Grafik di dalam kartu */
+.chart-box {
+    position: relative;
+    min-width: 0;
+}
+
+.chart-box canvas {
+    max-height: 300px;
+}
+
+/* Kotak abu-abu bertingkat (endpoint, info) */
+.panel-subtle {
+    padding: 16px;
+    margin-bottom: 16px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+}
+
+.panel-subtle:last-child {
+    margin-bottom: 0;
+}
+
+.panel-subtle h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: var(--fs-label);
+    color: var(--text-heading);
+}
+
+.panel-subtle h4 i {
+    color: var(--brand);
+}
+
+/* Blok kode satu baris / beberapa baris */
+.code-block {
+    display: block;
+    padding: 12px 14px;
+    background: var(--n-100);
+    border: 1px solid var(--n-200);
+    border-radius: var(--r-sm);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    color: var(--text-heading);
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Kartu di dalam kartu: elemen terakhir tidak menambah jarak bawah */
+.card > .card:last-child,
+.card > .dashboard-grid:last-child {
+    margin-bottom: 0;
+}
+
+.meta-text {
+    margin-top: 8px;
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+}
+
+/* Kotak sorotan (mis. API key baru) */
+.callout {
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: var(--r);
+    border: 1px solid var(--warn-border);
+    background: var(--warn-soft);
+    color: var(--text-body);
+}
+
+.callout h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: var(--fs-h3);
+    color: var(--warn);
+}
+
+.callout p {
+    margin-bottom: 12px;
+}
+
+.callout .code-block {
+    margin-bottom: 16px;
+    background: var(--bg-surface);
+}
+
+/* Daftar error log */
+.error-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.error-item {
+    padding: 12px 14px;
+    background: var(--err-soft);
+    border: 1px solid var(--err-border);
+    border-left: 3px solid var(--err);
+    border-radius: var(--r-sm);
+}
+
+.error-item-title {
+    font-weight: var(--fw-medium);
+    color: var(--err);
+}
+
+.error-item-meta {
+    margin-top: 4px;
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+}
+
+.error-item-context {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    color: var(--text-body);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* Daftar key/value (mis. System Metrics) */
+.kv-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.kv-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: var(--fs-label);
+}
+
+.kv-row:last-child {
+    border-bottom: none;
+}
+
+.kv-row span:first-child {
+    color: var(--text-muted);
+}
+
+.kv-row span:last-child {
+    font-weight: var(--fw-medium);
+    color: var(--text-heading);
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+/* Hasil generate license */
+.generated-keys-list {
+    display: grid;
+    gap: 12px;
+}
+
+.generated-key-item {
+    padding: 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    transition: border-color var(--dur) var(--ease);
+}
+
+.generated-key-item:hover {
+    border-color: var(--brand-border);
+}
+
+.generated-key-index {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--r-sm);
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-bold);
+}
+
+.generated-key-code {
+    font-size: var(--fs-body);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.02em;
+}
+
+/* Halaman health check */
+.health-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.health-hero-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: var(--r);
+    background: var(--n-100);
+    color: var(--n-500);
+    font-size: 22px;
+}
+
+.health-hero.is-ok .health-hero-icon { background: var(--ok-soft); color: var(--ok); }
+.health-hero.is-warn .health-hero-icon { background: var(--warn-soft); color: var(--warn); }
+.health-hero.is-err .health-hero-icon { background: var(--err-soft); color: var(--err); }
+
+.health-hero-text {
+    flex: 1;
+    min-width: 200px;
+}
+
+.health-hero-text h2 {
+    font-size: var(--fs-h1);
+    margin-bottom: 2px;
+}
+
+.health-hero-text p {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+}
+
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.health-check {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r);
+    box-shadow: var(--sh-card);
+}
+
+.health-check-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: var(--r);
+    background: var(--n-100);
+    color: var(--n-500);
+    font-size: 16px;
+}
+
+.health-check.is-ok .health-check-icon { background: var(--ok-soft); color: var(--ok); }
+.health-check.is-warn .health-check-icon { background: var(--warn-soft); color: var(--warn); }
+.health-check.is-err .health-check-icon { background: var(--err-soft); color: var(--err); }
+
+.health-check-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.health-check-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.health-check-name {
+    font-weight: var(--fw-medium);
+    color: var(--text-heading);
+}
+
+.health-check-detail {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+/* =================================================================
+   17. Responsif
+   ================================================================= */
+
+/* Tepat 4 kartu statistik: satu baris berisi 4 */
+.stats-grid:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+    .stats-grid:has(> :nth-child(4):last-child) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
 @media (max-width: 1600px) {
     .stats-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1451,7 +1769,8 @@ pre {
 }
 
 @media (max-width: 480px) {
-    .stats-grid {
+    .stats-grid,
+    .stats-grid:has(> :nth-child(4):last-child) {
         grid-template-columns: minmax(0, 1fr);
     }
 

@@ -447,7 +447,7 @@ include '../includes/header.php';
 
 <div class="card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
     <div class="card-header" style="background: transparent; border: none; padding: 0 0 20px 0;">
-        <h1 class="card-title" style="font-size: 28px;">
+        <h1 class="card-title">
             <i class="fas fa-cog"></i> Settings
         </h1>
     </div>
@@ -801,50 +801,50 @@ include '../includes/header.php';
             </div>
         </div>
         
-        <div style="background: var(--bg); border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-            <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">
+        <div class="panel-subtle">
+            <h4>
                 <i class="fas fa-plug"></i> Activate License
             </h4>
-            <code style="display: block; background: #1a1a2e; padding: 15px; border-radius: 8px; color: #00d4aa; font-size: 13px;">
+            <code class="code-block">
                 POST <?= rtrim(BASE_URL, '/') ?>/api/activate.php
             </code>
-            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+            <div class="meta-text">
                 Parameters: license_key, domain, product_id
             </div>
         </div>
         
-        <div style="background: var(--bg); border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-            <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">
+        <div class="panel-subtle">
+            <h4>
                 <i class="fas fa-unlink"></i> Deactivate License
             </h4>
-            <code style="display: block; background: #1a1a2e; padding: 15px; border-radius: 8px; color: #00d4aa; font-size: 13px;">
+            <code class="code-block">
                 POST <?= rtrim(BASE_URL, '/') ?>/api/deactivate.php
             </code>
-            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+            <div class="meta-text">
                 Parameters: license_key, domain
             </div>
         </div>
         
-        <div style="background: var(--bg); border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-            <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">
+        <div class="panel-subtle">
+            <h4>
                 <i class="fas fa-search"></i> Check License
             </h4>
-            <code style="display: block; background: #1a1a2e; padding: 15px; border-radius: 8px; color: #00d4aa; font-size: 13px;">
+            <code class="code-block">
                 POST <?= rtrim(BASE_URL, '/') ?>/api/check.php
             </code>
-            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+            <div class="meta-text">
                 Parameters: license_key, domain
             </div>
         </div>
         
-        <div style="background: var(--bg); border-radius: 10px; padding: 20px;">
-            <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">
+        <div class="panel-subtle">
+            <h4>
                 <i class="fas fa-heartbeat"></i> Health Check
             </h4>
-            <code style="display: block; background: #1a1a2e; padding: 15px; border-radius: 8px; color: #00d4aa; font-size: 13px;">
+            <code class="code-block">
                 GET <?= rtrim(BASE_URL, '/') ?>/api/health.php
             </code>
-            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+            <div class="meta-text">
                 No parameters required
             </div>
         </div>

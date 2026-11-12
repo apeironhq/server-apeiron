@@ -383,7 +383,7 @@ include '../includes/header.php';
     </div>
     
     <?php if (!empty($generated_keys)): ?>
-        <div class="card" style="margin-top: 30px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+        <div class="card" style="margin-top: 24px;">
             <div class="card-header">
                 <h2 class="card-title">
                     <i class="fas fa-check-circle" style="color: var(--success);"></i> Generated License Keys
@@ -393,18 +393,16 @@ include '../includes/header.php';
                     <i class="fas fa-copy"></i> Copy All
                 </button>
             </div>
-            <div class="generated-keys-list" style="display: grid; gap: 12px;">
+            <div class="generated-keys-list">
                 <?php foreach ($generated_keys as $index => $key_data): ?>
-                    <div class="generated-key-item" style="padding: 20px; background: white; border-radius: 12px; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: all 0.2s;" 
-                         onmouseover="this.style.borderColor='var(--success)'; this.style.boxShadow='0 2px 6px rgba(70, 180, 80, 0.1)'"
-                         onmouseout="this.style.borderColor='var(--bg)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.04)'">
+                    <div class="generated-key-item">
                         <div class="generated-key-content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                             <div class="generated-key-main" style="flex: 1; min-width: 250px;">
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                    <span style="background: var(--primary); color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">
+                                    <span class="generated-key-index">
                                         #<?= $index + 1 ?>
                                     </span>
-                                    <code style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: 1px;">
+                                    <code class="generated-key-code">
                                         <?= htmlspecialchars($key_data['key']) ?>
                                     </code>
                                 </div>
@@ -458,8 +456,8 @@ function showLoading(event) {
         // Show overlay loading
         const loadingOverlay = document.createElement('div');
         loadingOverlay.id = 'loadingOverlay';
-        loadingOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;';
-        loadingOverlay.innerHTML = '<div style="background: white; padding: 30px; border-radius: 10px; text-align: center;"><i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i><p style="margin-top: 15px; font-size: 16px;">Generating license keys... Please wait</p></div>';
+        loadingOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); z-index: 9999; display: flex; align-items: center; justify-content: center;';
+        loadingOverlay.innerHTML = '<div style="background: var(--bg-surface); color: var(--text-heading); padding: 30px; border-radius: var(--r); border: 1px solid var(--border-soft); box-shadow: var(--sh-pop); text-align: center;"><i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i><p style="margin-top: 15px; font-size: 16px;">Generating license keys... Please wait</p></div>';
         document.body.appendChild(loadingOverlay);
         
         // Re-enable after 60 seconds as fallback (in case of error)

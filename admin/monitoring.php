@@ -98,7 +98,7 @@ include '../includes/header.php';
     </div>
 </div>
 
-<div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+<div class="dashboard-grid">
     <!-- Performance Stats -->
     <div class="card">
         <div class="card-header">
@@ -147,21 +147,19 @@ include '../includes/header.php';
                 <i class="fas fa-server"></i> System Metrics
             </h2>
         </div>
-        <div style="padding: 20px;">
-            <div style="margin-bottom: 15px;">
-                <strong>PHP Version:</strong> <?= phpversion() ?><br>
-                <strong>Memory Limit:</strong> <?= ini_get('memory_limit') ?><br>
-                <strong>Max Execution Time:</strong> <?= ini_get('max_execution_time') ?>s<br>
-                <?php if (isset($system_metrics['cpu_load'])): ?>
-                <strong>CPU Load:</strong> <?= number_format($system_metrics['cpu_load'], 2) ?><br>
-                <?php endif; ?>
-            </div>
-            
-            <div style="margin-top: 20px;">
-                <a href="../api/health.php" target="_blank" class="btn btn-secondary">
-                    <i class="fas fa-heartbeat"></i> View Health Check
-                </a>
-            </div>
+        <div class="kv-list">
+            <div class="kv-row"><span>PHP Version</span><span><?= phpversion() ?></span></div>
+            <div class="kv-row"><span>Memory Limit</span><span><?= ini_get('memory_limit') ?></span></div>
+            <div class="kv-row"><span>Max Execution Time</span><span><?= ini_get('max_execution_time') ?>s</span></div>
+            <?php if (isset($system_metrics['cpu_load'])): ?>
+            <div class="kv-row"><span>CPU Load</span><span><?= number_format($system_metrics['cpu_load'], 2) ?></span></div>
+            <?php endif; ?>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="health.php" class="btn btn-secondary">
+                <i class="fas fa-heartbeat"></i> View Health Check
+            </a>
         </div>
     </div>
 </div>
@@ -174,32 +172,28 @@ include '../includes/header.php';
             <i class="fas fa-exclamation-triangle"></i> Recent Errors
         </h2>
     </div>
-    <div style="padding: 20px;">
-        <div style="max-height: 400px; overflow-y: auto;">
-            <?php foreach ($recent_errors as $error_line): ?>
-                <?php 
-                $error_data = json_decode(trim($error_line), true);
-                if ($error_data):
-                ?>
-                <div style="padding: 10px; margin-bottom: 10px; background: #f8d7da; border-left: 4px solid #dc3232; border-radius: 4px;">
-                    <div style="font-weight: 600; color: #721c24;">
-                        <?= htmlspecialchars($error_data['message'] ?? 'Unknown error') ?>
-                    </div>
-                    <div style="font-size: 12px; color: #856404; margin-top: 5px;">
-                        <i class="fas fa-clock"></i> <?= htmlspecialchars($error_data['timestamp'] ?? '') ?>
-                        <?php if (isset($error_data['file'])): ?>
-                        | <i class="fas fa-file"></i> <?= htmlspecialchars($error_data['file']) ?>
-                        <?php endif; ?>
-                    </div>
-                    <?php if (!empty($error_data['context'])): ?>
-                    <div style="font-size: 11px; color: #666; margin-top: 5px; font-family: monospace;">
-                        <?= htmlspecialchars(json_encode($error_data['context'], JSON_PRETTY_PRINT)) ?>
-                    </div>
+    <div class="error-list">
+        <?php foreach ($recent_errors as $error_line): ?>
+            <?php
+            $error_data = json_decode(trim($error_line), true);
+            if ($error_data):
+            ?>
+            <div class="error-item">
+                <div class="error-item-title">
+                    <?= htmlspecialchars($error_data['message'] ?? 'Unknown error') ?>
+                </div>
+                <div class="error-item-meta">
+                    <i class="fas fa-clock"></i> <?= htmlspecialchars($error_data['timestamp'] ?? '') ?>
+                    <?php if (isset($error_data['file'])): ?>
+                    · <i class="fas fa-file"></i> <?= htmlspecialchars($error_data['file']) ?>
                     <?php endif; ?>
                 </div>
+                <?php if (!empty($error_data['context'])): ?>
+                <div class="error-item-context"><?= htmlspecialchars(json_encode($error_data['context'], JSON_PRETTY_PRINT)) ?></div>
                 <?php endif; ?>
-            <?php endforeach; ?>
-        </div>
+            </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </div>
 </div>
 <?php endif; ?>

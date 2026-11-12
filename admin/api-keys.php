@@ -237,17 +237,13 @@ include '../includes/header.php';
     <?php endif; ?>
     
     <?php if ($new_key): ?>
-        <div class="alert alert-warning" style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; margin: 20px 0;">
-            <h3 style="margin-top: 0;">
+        <div class="callout">
+            <h3>
                 <i class="fas fa-exclamation-triangle"></i> API Key Created!
             </h3>
             <p><strong>Simpan API Key ini dengan aman - hanya ditampilkan sekali!</strong></p>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                <strong>API Key:</strong>
-                <code style="display: block; margin-top: 10px; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 4px; word-break: break-all; font-size: 14px;">
-                    <?= htmlspecialchars($new_key['api_key']) ?>
-                </code>
-            </div>
+            <div class="form-label">API Key</div>
+            <code class="code-block"><?= htmlspecialchars($new_key['api_key']) ?></code>
             <button type="button" class="btn btn-secondary" onclick="copyApiKey('<?= htmlspecialchars($new_key['api_key']) ?>')">
                 <i class="fas fa-copy"></i> Copy API Key
             </button>
