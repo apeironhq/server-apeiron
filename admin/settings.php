@@ -191,8 +191,9 @@ include '../includes/header.php';
     gap: 4px;
     margin-bottom: 24px;
     background: var(--bg);
-    padding: 6px;
-    border-radius: 12px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
     overflow-x: auto;
 }
 
@@ -215,12 +216,13 @@ include '../includes/header.php';
 
 .settings-tab:hover {
     color: var(--text);
-    background: rgba(255,255,255,0.05);
+    background: var(--bg-hover);
 }
 
 .settings-tab.active {
-    background: var(--primary);
-    color: #000;
+    background: var(--bg-surface);
+    color: var(--brand-ink);
+    box-shadow: var(--sh-card);
 }
 
 .settings-tab i {
@@ -230,8 +232,9 @@ include '../includes/header.php';
 /* Settings Section */
 .settings-section {
     background: var(--card-bg);
-    border-radius: 16px;
-    padding: 30px;
+    border-radius: var(--r);
+    box-shadow: var(--sh-card);
+    padding: 24px;
     margin-bottom: 24px;
     border: 1px solid var(--border);
 }
@@ -288,7 +291,8 @@ include '../includes/header.php';
     justify-content: space-between;
     padding: 16px;
     background: var(--bg);
-    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
     margin-bottom: 12px;
 }
 
@@ -328,7 +332,7 @@ include '../includes/header.php';
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #333;
+    background-color: var(--n-300);
     transition: .3s;
     border-radius: 28px;
 }
@@ -355,9 +359,9 @@ include '../includes/header.php';
 
 /* Test Email Box */
 .test-email-box {
-    background: linear-gradient(135deg, rgba(0,212,170,0.1) 0%, rgba(0,184,148,0.1) 100%);
-    border: 1px solid rgba(0,212,170,0.3);
-    border-radius: 12px;
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-border);
+    border-radius: var(--r);
     padding: 20px;
     margin-top: 24px;
 }
@@ -382,9 +386,9 @@ include '../includes/header.php';
 
 /* Info Box */
 .info-box {
-    background: rgba(102,126,234,0.1);
-    border: 1px solid rgba(102,126,234,0.3);
-    border-radius: 10px;
+    background: var(--info-soft);
+    border: 1px solid var(--info-border);
+    border-radius: var(--r);
     padding: 16px;
     margin-bottom: 20px;
     display: flex;
@@ -393,7 +397,7 @@ include '../includes/header.php';
 }
 
 .info-box i {
-    color: #667eea;
+    color: var(--info-ink);
     font-size: 18px;
     margin-top: 2px;
 }
