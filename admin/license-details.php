@@ -14,6 +14,21 @@ if (!$license_id) {
     exit;
 }
 
+// Detail kini tampil sebagai popup di licenses.php. Alamat lama diarahkan ke sana;
+// ?modal=1 mengembalikan potongan HTML untuk isi popup.
+$is_modal = isset($_GET['modal']);
+if (!$is_modal) {
+    header('Location: licenses.php?view=' . $license_id);
+    exit;
+}
+
+function license_detail_error(string $message): void {
+    http_response_code(404);
+    echo '<div data-modal-fragment><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><span>'
+        . htmlspecialchars($message) . '</span></div></div>';
+    exit;
+}
+
 try {
     $db = get_db_connection();
     
@@ -28,9 +43,7 @@ try {
     $license = $stmt->fetch();
     
     if (!$license) {
-        $_SESSION['error_message'] = 'License not found';
-        header('Location: licenses.php');
-        exit;
+        license_detail_error('License not found');
     }
     
     // Get activations
@@ -55,255 +68,149 @@ try {
     $logs = $logs->fetchAll();
     
 } catch (Exception $e) {
-    $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
-    header('Location: licenses.php');
-    exit;
+    license_detail_error('Error: ' . $e->getMessage());
 }
 
-include '../includes/header.php';
+$edit_payload = [
+    'id' => $license['id'],
+    'status' => $license['status'],
+    'expires' => $license['expires'],
+    'activation_limit' => $license['activation_limit'],
+    'customer_name' => $license['customer_name'],
+    'customer_email' => $license['customer_email'],
+    'notes' => $license['notes'],
+];
 ?>
-
-<div class="card">
-    <div class="card-header">
-        <h1 class="card-title">
-            <i class="fas fa-certificate"></i> License Details
-        </h1>
-        <div>
-            <a href="licenses.php" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-            <button class="btn btn-primary" onclick="showEditModal()">
-                <i class="fas fa-edit"></i> Edit
-            </button>
-        </div>
+<div data-modal-fragment>
+    <div class="detail-actions">
+        <button type="button" class="btn btn-sm btn-secondary" data-copy="<?= htmlspecialchars($license['license_key']) ?>">
+            <i class="fas fa-copy"></i> Copy Key
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" data-edit-license="<?= htmlspecialchars(json_encode($edit_payload)) ?>">
+            <i class="fas fa-edit"></i> Edit
+        </button>
     </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+
+    <div class="detail-key">
+        <i class="fas fa-key" style="color: var(--text-faint);"></i>
+        <code><?= htmlspecialchars($license['license_key']) ?></code>
+    </div>
+
+    <div class="detail-grid">
         <div>
-            <h3 style="margin-bottom: 15px; color: var(--text-muted); font-size: 14px; text-transform: uppercase;">License Information</h3>
-            <table style="width: 100%;">
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted); width: 150px;">License Key:</td>
-                    <td style="padding: 10px 0;">
-                        <code style="font-size: 16px;"><?= htmlspecialchars($license['license_key']) ?></code>
-                        <button class="btn btn-sm btn-secondary" data-copy="<?= htmlspecialchars($license['license_key']) ?>" style="margin-left: 10px;">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted);">Product ID:</td>
-                    <td style="padding: 10px 0;"><?= htmlspecialchars($license['product_id']) ?></td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted);">Status:</td>
-                    <td style="padding: 10px 0;">
-                        <span class="badge badge-<?= $license['status'] ?>">
-                            <?= ucfirst($license['status']) ?>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted);">Expires:</td>
-                    <td style="padding: 10px 0;">
+            <div class="section-title">License Information</div>
+            <div class="kv-list">
+                <div class="kv-row"><span>Product ID</span><span><?= htmlspecialchars($license['product_id']) ?></span></div>
+                <div class="kv-row">
+                    <span>Status</span>
+                    <span><span class="badge badge-<?= htmlspecialchars($license['status']) ?>"><?= ucfirst(htmlspecialchars($license['status'])) ?></span></span>
+                </div>
+                <div class="kv-row">
+                    <span>Expires</span>
+                    <span>
                         <?php if ($license['expires']): ?>
-                            <?php 
+                            <?php
                                 $days_left = (strtotime($license['expires']) - time()) / 86400;
                                 $status_class = $days_left < 0 ? 'danger' : ($days_left <= 7 ? 'warning' : 'success');
                             ?>
                             <?= format_date($license['expires'], 'Y-m-d') ?>
-                            <span class="badge badge-<?= $status_class ?>" style="margin-left: 10px;">
-                                <?= floor($days_left) ?> days left
-                            </span>
+                            <span class="badge badge-<?= $status_class ?>" style="margin-left: 6px;"><?= floor($days_left) ?> days left</span>
                         <?php else: ?>
-                            <span style="color: var(--text-muted);">Never</span>
+                            Never
                         <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted);">Activation Limit:</td>
-                    <td style="padding: 10px 0;"><?= $license['activation_limit'] ?: 'Unlimited' ?></td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted);">Created:</td>
-                    <td style="padding: 10px 0;">
+                    </span>
+                </div>
+                <div class="kv-row"><span>Activation Limit</span><span><?= $license['activation_limit'] ?: 'Unlimited' ?></span></div>
+                <div class="kv-row">
+                    <span>Created</span>
+                    <span>
                         <?= format_date($license['created_at']) ?>
                         <?php if ($license['created_by_name']): ?>
-                            <br><small style="color: var(--text-muted);">by <?= htmlspecialchars($license['created_by_fullname'] ?: $license['created_by_name']) ?></small>
+                            <span class="cell-sub">by <?= htmlspecialchars($license['created_by_fullname'] ?: $license['created_by_name']) ?></span>
                         <?php endif; ?>
-                    </td>
-                </tr>
-            </table>
+                    </span>
+                </div>
+            </div>
         </div>
-        
+
         <div>
-            <h3 style="margin-bottom: 15px; color: var(--text-muted); font-size: 14px; text-transform: uppercase;">Customer Information</h3>
-            <table style="width: 100%;">
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted); width: 150px;">Name:</td>
-                    <td style="padding: 10px 0;"><?= htmlspecialchars($license['customer_name'] ?: '-') ?></td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted);">Email:</td>
-                    <td style="padding: 10px 0;"><?= htmlspecialchars($license['customer_email'] ?: '-') ?></td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 0; color: var(--text-muted); vertical-align: top;">Notes:</td>
-                    <td style="padding: 10px 0;"><?= nl2br(htmlspecialchars($license['notes'] ?: '-')) ?></td>
-                </tr>
+            <div class="section-title">Customer Information</div>
+            <div class="kv-list">
+                <div class="kv-row"><span>Name</span><span><?= htmlspecialchars($license['customer_name'] ?: '-') ?></span></div>
+                <div class="kv-row"><span>Email</span><span><?= htmlspecialchars($license['customer_email'] ?: '-') ?></span></div>
+                <div class="kv-row"><span>Notes</span><span><?= nl2br(htmlspecialchars($license['notes'] ?: '-')) ?></span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <div class="section-title"><i class="fas fa-link"></i> Activations (<?= count($activations) ?>)</div>
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Site URL</th>
+                        <th>Site Name</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                        <th>Activated</th>
+                        <th>Last Check</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($activations)): ?>
+                        <tr class="empty-row"><td colspan="6">No activations yet</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($activations as $activation): ?>
+                        <tr>
+                            <td><code class="key-chip key-chip-wide" title="<?= htmlspecialchars($activation['site_url']) ?>"><?= htmlspecialchars($activation['site_url']) ?></code></td>
+                            <td><?= htmlspecialchars($activation['site_name'] ?: '-') ?></td>
+                            <td><?= htmlspecialchars($activation['ip_address'] ?: '-') ?></td>
+                            <td>
+                                <span class="badge badge-<?= $activation['status'] === 'active' ? 'success' : 'inactive' ?>">
+                                    <?= ucfirst(htmlspecialchars($activation['status'])) ?>
+                                </span>
+                            </td>
+                            <td><?= format_date($activation['activated_at']) ?></td>
+                            <td><?= $activation['last_check'] ? format_date($activation['last_check']) : '-' ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <div class="section-title"><i class="fas fa-history"></i> Activity Logs</div>
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>User</th>
+                        <th>IP Address</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($logs)): ?>
+                        <tr class="empty-row"><td colspan="5">No activity logs</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($logs as $log): ?>
+                        <tr>
+                            <td><span class="badge badge-info"><?= htmlspecialchars($log['action']) ?></span></td>
+                            <td><?= htmlspecialchars($log['description'] ?: '-') ?></td>
+                            <td><?= htmlspecialchars($log['username'] ?: 'System') ?></td>
+                            <td><?= htmlspecialchars($log['ip_address'] ?: '-') ?></td>
+                            <td><?= format_date($log['created_at']) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
             </table>
         </div>
     </div>
 </div>
-
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">
-            <i class="fas fa-link"></i> Activations (<?= count($activations) ?>)
-        </h2>
-    </div>
-    <div class="table-wrapper">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Site URL</th>
-                    <th>Site Name</th>
-                    <th>IP Address</th>
-                    <th>Status</th>
-                    <th>Activated</th>
-                    <th>Last Check</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($activations)): ?>
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            No activations yet
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($activations as $activation): ?>
-                    <tr>
-                        <td><code><?= htmlspecialchars($activation['site_url']) ?></code></td>
-                        <td><?= htmlspecialchars($activation['site_name'] ?: '-') ?></td>
-                        <td><?= htmlspecialchars($activation['ip_address'] ?: '-') ?></td>
-                        <td>
-                            <span class="badge badge-<?= $activation['status'] === 'active' ? 'success' : 'inactive' ?>">
-                                <?= ucfirst($activation['status']) ?>
-                            </span>
-                        </td>
-                        <td><?= format_date($activation['activated_at']) ?></td>
-                        <td><?= $activation['last_check'] ? format_date($activation['last_check']) : '-' ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">
-            <i class="fas fa-history"></i> Activity Logs
-        </h2>
-    </div>
-    <div class="table-wrapper">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Action</th>
-                    <th>Description</th>
-                    <th>User</th>
-                    <th>IP Address</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($logs)): ?>
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            No activity logs
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($logs as $log): ?>
-                    <tr>
-                        <td><span class="badge badge-info"><?= htmlspecialchars($log['action']) ?></span></td>
-                        <td><?= htmlspecialchars($log['description'] ?: '-') ?></td>
-                        <td><?= htmlspecialchars($log['username'] ?: 'System') ?></td>
-                        <td><?= htmlspecialchars($log['ip_address'] ?: '-') ?></td>
-                        <td><?= format_date($log['created_at']) ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Edit Modal (same as licenses.php) -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Edit License</h2>
-            <button class="modal-close">&times;</button>
-        </div>
-        <form method="POST" action="licenses.php">
-            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-            <input type="hidden" name="action" value="update">
-            <input type="hidden" name="license_id" value="<?= $license['id'] ?>">
-            
-            <div class="form-group">
-                <label class="form-label">Status</label>
-                <select name="status" class="form-control" required>
-                    <option value="active" <?= $license['status'] === 'active' ? 'selected' : '' ?>>Active</option>
-                    <option value="inactive" <?= $license['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                    <option value="expired" <?= $license['status'] === 'expired' ? 'selected' : '' ?>>Expired</option>
-                    <option value="suspended" <?= $license['status'] === 'suspended' ? 'selected' : '' ?>>Suspended</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Expiration Date</label>
-                <input type="date" name="expires" class="form-control" value="<?= $license['expires'] ?>">
-                <div class="form-text">Leave empty for no expiration</div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Activation Limit</label>
-                <input type="number" name="activation_limit" class="form-control" value="<?= $license['activation_limit'] ?>" min="0" required>
-                <div class="form-text">0 = unlimited</div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Customer Name</label>
-                <input type="text" name="customer_name" class="form-control" value="<?= htmlspecialchars($license['customer_name'] ?: '') ?>">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Customer Email</label>
-                <input type="email" name="customer_email" class="form-control" value="<?= htmlspecialchars($license['customer_email'] ?: '') ?>">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Notes</label>
-                <textarea name="notes" class="form-control" rows="3"><?= htmlspecialchars($license['notes'] ?: '') ?></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button type="button" class="btn btn-secondary" onclick="hideModal('editModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update License</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function showEditModal() {
-    showModal('editModal');
-}
-</script>
-
-<?php include '../includes/footer.php'; ?>
 

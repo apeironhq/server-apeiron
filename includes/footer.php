@@ -15,6 +15,17 @@
     <?php if (!empty($__app_shell_open)): ?>
         </div> <!-- end app-main -->
     </div> <!-- end app-shell -->
+
+    <!-- Popup generik: isinya dimuat lewat [data-modal-url] (lihat main.js) -->
+    <div id="ajaxModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="ajaxModalTitle">Detail</h2>
+                <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+            </div>
+            <div id="ajaxModalBody"></div>
+        </div>
+    </div>
     <?php endif; ?>
 
     <?php

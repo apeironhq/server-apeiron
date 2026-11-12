@@ -56,17 +56,17 @@ include '../includes/header.php';
         </h1>
     </div>
     
-    <div style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <form method="GET" style="display: flex; gap: 10px; flex: 1; min-width: 300px;">
-            <input type="text" name="search" class="form-control" placeholder="Search site URL or license key..." 
+    <div class="toolbar">
+        <form method="GET" class="toolbar-search">
+            <input type="text" name="search" class="form-control" placeholder="Search site URL or license key..."
                    value="<?= htmlspecialchars($search) ?>">
             <button type="submit" class="btn btn-secondary">
                 <i class="fas fa-search"></i> Search
             </button>
         </form>
-        
-        <select class="form-control" style="width: 150px;" 
-                onchange="window.location.href='?status='+this.value+'&search=<?= urlencode($search) ?>'">
+
+        <select class="form-control"
+                onchange="window.location.href='?status='+encodeURIComponent(this.value)+'&search=<?= htmlspecialchars(urlencode($search), ENT_QUOTES) ?>'">
             <option value="">All Status</option>
             <option value="active" <?= $filter_status === 'active' ? 'selected' : '' ?>>Active</option>
             <option value="deactivated" <?= $filter_status === 'deactivated' ? 'selected' : '' ?>>Deactivated</option>
@@ -85,37 +85,53 @@ include '../includes/header.php';
                     <th>Activation Status</th>
                     <th>Activated</th>
                     <th>Last Check</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($activations)): ?>
-                    <tr>
-                        <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            No activations found
-                        </td>
+                    <tr class="empty-row">
+                        <td colspan="9">No activations found</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($activations as $activation): ?>
                     <tr>
                         <td>
-                            <code><?= htmlspecialchars($activation['license_key']) ?></code>
-                            <br><small style="color: var(--text-muted);"><?= htmlspecialchars($activation['product_id']) ?></small>
+                            <code class="key-chip"><?= htmlspecialchars(ui_mask_key($activation['license_key'])) ?></code>
+                            <span class="cell-sub"><?= htmlspecialchars($activation['product_id']) ?></span>
                         </td>
-                        <td><code><?= htmlspecialchars($activation['site_url']) ?></code></td>
-                        <td><?= htmlspecialchars($activation['site_name'] ?: '-') ?></td>
-                        <td><?= htmlspecialchars($activation['ip_address'] ?: '-') ?></td>
                         <td>
-                            <span class="badge badge-<?= $activation['license_status'] ?>">
-                                <?= ucfirst($activation['license_status']) ?>
+                            <code class="key-chip key-chip-wide" title="<?= htmlspecialchars($activation['site_url']) ?>"><?= htmlspecialchars($activation['site_url']) ?></code>
+                        </td>
+                        <td><?= htmlspecialchars($activation['site_name'] ?: '-') ?></td>
+                        <td><span class="key-chip" title="<?= htmlspecialchars($activation['ip_address'] ?: '') ?>" style="max-width: 160px;"><?= htmlspecialchars($activation['ip_address'] ?: '-') ?></span></td>
+                        <td>
+                            <span class="badge badge-<?= htmlspecialchars((string) $activation['license_status']) ?>">
+                                <?= ucfirst(htmlspecialchars((string) $activation['license_status'])) ?>
                             </span>
                         </td>
                         <td>
                             <span class="badge badge-<?= $activation['status'] === 'active' ? 'success' : 'inactive' ?>">
-                                <?= ucfirst($activation['status']) ?>
+                                <?= ucfirst(htmlspecialchars($activation['status'])) ?>
                             </span>
                         </td>
                         <td><?= format_date($activation['activated_at']) ?></td>
                         <td><?= $activation['last_check'] ? format_date($activation['last_check']) : '-' ?></td>
+                        <td>
+                            <div class="row-actions">
+                                <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Copy license key"
+                                        data-copy="<?= htmlspecialchars((string) $activation['license_key']) ?>">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <?php if (!empty($activation['license_id'])): ?>
+                                <button type="button" class="btn btn-sm btn-secondary btn-icon" title="License detail"
+                                        data-modal-url="license-details.php?id=<?= (int) $activation['license_id'] ?>&amp;modal=1"
+                                        data-modal-title="License Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <?php endif; ?>
+                            </div>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

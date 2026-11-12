@@ -172,9 +172,9 @@ include '../includes/header.php';
         <?php endif; ?>
     </div>
     
-    <div style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <select class="form-control" style="width: 200px;" 
-                onchange="window.location.href='?action='+this.value+'&type=<?= $filter_type ?>'">
+    <div class="toolbar">
+        <select class="form-control"
+                onchange="window.location.href='?action='+encodeURIComponent(this.value)+'&type=<?= htmlspecialchars(urlencode($filter_type), ENT_QUOTES) ?>'">
             <option value="">All Actions</option>
             <?php foreach ($actions as $action): ?>
                 <option value="<?= htmlspecialchars($action) ?>" <?= $filter_action === $action ? 'selected' : '' ?>>
@@ -183,8 +183,8 @@ include '../includes/header.php';
             <?php endforeach; ?>
         </select>
         
-        <select class="form-control" style="width: 200px;" 
-                onchange="window.location.href='?action=<?= $filter_action ?>&type='+this.value">
+        <select class="form-control"
+                onchange="window.location.href='?action=<?= htmlspecialchars(urlencode($filter_action), ENT_QUOTES) ?>&type='+encodeURIComponent(this.value)">
             <option value="">All Types</option>
             <?php foreach ($types as $type): ?>
                 <option value="<?= htmlspecialchars($type) ?>" <?= $filter_type === $type ? 'selected' : '' ?>>
@@ -235,14 +235,16 @@ include '../includes/header.php';
                         <td><?= htmlspecialchars($log['username'] ?: ($log['full_name'] ?: 'System')) ?></td>
                         <td><?= htmlspecialchars($log['ip_address'] ?: '-') ?></td>
                         <td>
-                            <div><?= format_date($log['created_at']) ?></div>
-                            <small style="color: var(--text-muted);"><?= time_ago($log['created_at']) ?></small>
+                            <?= format_date($log['created_at']) ?>
+                            <span class="cell-sub"><?= time_ago($log['created_at']) ?></span>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-danger" 
-                                    onclick="confirmDeleteLog(<?= $log['id'] ?>, '<?= htmlspecialchars($log['action'], ENT_QUOTES) ?>')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                            <div class="row-actions">
+                                <button type="button" class="btn btn-sm btn-danger btn-icon" title="Delete log"
+                                        onclick="confirmDeleteLog(<?= $log['id'] ?>, '<?= htmlspecialchars($log['action'], ENT_QUOTES) ?>')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>

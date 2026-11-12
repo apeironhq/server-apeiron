@@ -8,8 +8,18 @@ $admin_path = $is_admin ? '' : 'admin/';
 $current_page = basename($_SERVER['PHP_SELF']);
 
 // Halaman turunan menandai menu induknya sebagai aktif di sidebar
-$__nav_parent = ['health.php' => 'monitoring.php', 'license-details.php' => 'licenses.php'];
+$__nav_parent = ['health.php' => 'monitoring.php', 'license-details.php' => 'licenses.php', 'generate.php' => 'licenses.php'];
 $__nav_current = $__nav_parent[$current_page] ?? $current_page;
+
+// Tampilan singkat untuk key panjang (mis. APEIRON-…371EB631). Hanya untuk tampilan.
+if (!function_exists('ui_mask_key')) {
+    function ui_mask_key($key): string {
+        $key = (string) $key;
+        $len = strlen($key);
+        if ($len <= 20) return $key;
+        return substr($key, 0, 8) . '…' . substr($key, -8);
+    }
+}
 
 // Dipakai footer.php untuk menutup kerangka sidebar dengan benar
 $__app_shell_open = (bool) $show_header;
@@ -21,7 +31,6 @@ $__nav_role = (isset($_SESSION['admin_role']) && $_SESSION['admin_role'] === 'su
 $__nav_main = [
     ['index.php', 'fa-th-large', 'Dashboard'],
     ['licenses.php', 'fa-id-card', 'Licenses'],
-    ['generate.php', 'fa-plus-circle', 'Generate'],
     ['analytics.php', 'fa-chart-bar', 'Analytics'],
     ['activations.php', 'fa-plug', 'Activations'],
     ['api-keys.php', 'fa-key', 'API Keys'],

@@ -327,6 +327,13 @@ try {
     $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
 }
 
+// Hasil generate (ditampilkan sekali sebagai popup) dan popup yang dibuka otomatis
+$generated_keys = $_SESSION['generated_keys'] ?? [];
+unset($_SESSION['generated_keys']);
+$open_generate = isset($_GET['generate']);
+$open_view_id = intval($_GET['view'] ?? 0);
+$generate_products = !empty($products) ? $products : ['apeiron-kit'];
+
 include '../includes/header.php';
 ?>
 
@@ -335,68 +342,66 @@ include '../includes/header.php';
         <h1 class="card-title">
             <i class="fas fa-certificate"></i> Manage Licenses
         </h1>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <a href="generate.php" class="btn btn-primary">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" onclick="showModal('generateModal')">
                 <i class="fas fa-plus"></i> Generate New
-            </a>
+            </button>
             <a href="licenses.php?export=csv<?= !empty($filter_status) ? '&status=' . urlencode($filter_status) : '' ?><?= !empty($filter_product) ? '&product=' . urlencode($filter_product) : '' ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" class="btn btn-secondary" id="exportBtn">
                 <i class="fas fa-download"></i> Export CSV
             </a>
         </div>
     </div>
-    
+
     <!-- FEATURE: Bulk Operations Bar -->
-    <div id="bulkActionsBar" style="display: none; padding: 15px; background: var(--bg); border-bottom: 1px solid var(--border); margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-            <span id="selectedCount" style="font-weight: 600; color: var(--primary);">0 selected</span>
-            <select id="bulkStatusSelect" class="form-control" style="width: 150px;">
-                <option value="">Select Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="expired">Expired</option>
-                <option value="suspended">Suspended</option>
-            </select>
-            <form method="POST" style="display: inline;" id="bulkStatusForm" onsubmit="return confirm('Update status untuk license yang dipilih?');">
-                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                <input type="hidden" name="action" value="bulk_update_status">
-                <input type="hidden" name="new_status" id="bulkNewStatus">
-                <input type="hidden" name="selected_ids" id="bulkSelectedIds">
-                <button type="submit" class="btn btn-sm btn-primary" id="bulkUpdateBtn" disabled>
-                    <i class="fas fa-sync"></i> Update Status
-                </button>
-            </form>
-            <form method="POST" style="display: inline;" id="bulkDeleteForm" onsubmit="return confirm('Hapus license yang dipilih? Tindakan ini tidak dapat dibatalkan!');">
-                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                <input type="hidden" name="action" value="bulk_delete">
-                <input type="hidden" name="selected_ids" id="bulkDeleteIds">
-                <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled>
-                    <i class="fas fa-trash"></i> Delete Selected
-                </button>
-            </form>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="clearSelection()">
-                <i class="fas fa-times"></i> Clear Selection
+    <div id="bulkActionsBar" class="bulk-bar">
+        <span id="selectedCount" class="bulk-bar-count">0 selected</span>
+        <select id="bulkStatusSelect" class="form-control form-control-sm">
+            <option value="">Select Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="expired">Expired</option>
+            <option value="suspended">Suspended</option>
+        </select>
+        <form method="POST" id="bulkStatusForm" onsubmit="return confirm('Update status untuk license yang dipilih?');">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+            <input type="hidden" name="action" value="bulk_update_status">
+            <input type="hidden" name="new_status" id="bulkNewStatus">
+            <span class="bulk-ids"></span>
+            <button type="submit" class="btn btn-sm btn-primary" id="bulkUpdateBtn" disabled>
+                <i class="fas fa-sync"></i> Update Status
             </button>
-        </div>
+        </form>
+        <form method="POST" id="bulkDeleteForm" onsubmit="return confirm('Hapus license yang dipilih? Tindakan ini tidak dapat dibatalkan!');">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+            <input type="hidden" name="action" value="bulk_delete">
+            <span class="bulk-ids"></span>
+            <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled>
+                <i class="fas fa-trash"></i> Delete Selected
+            </button>
+        </form>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="clearSelection()">
+            <i class="fas fa-times"></i> Clear
+        </button>
     </div>
-    
-    <div style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-        <form method="GET" style="display: flex; gap: 10px; flex: 1; min-width: 300px;">
-            <input type="text" name="search" class="form-control" placeholder="Search license key, customer..." 
-                   value="<?= htmlspecialchars($search) ?>" style="flex: 1;">
+
+    <div class="toolbar">
+        <form method="GET" class="toolbar-search">
+            <input type="text" name="search" class="form-control" placeholder="Search license key, customer..."
+                   value="<?= htmlspecialchars($search) ?>">
             <button type="submit" class="btn btn-secondary">
                 <i class="fas fa-search"></i> Search
             </button>
         </form>
-        
-        <select class="form-control" style="width: 150px;" onchange="window.location.href='?status='+this.value+'&product=<?= $filter_product ?>&search=<?= urlencode($search) ?>'">
+
+        <select class="form-control" onchange="window.location.href='?status='+encodeURIComponent(this.value)+'&product=<?= htmlspecialchars(urlencode($filter_product), ENT_QUOTES) ?>&search=<?= htmlspecialchars(urlencode($search), ENT_QUOTES) ?>'">
             <option value="">All Status</option>
             <option value="active" <?= $filter_status === 'active' ? 'selected' : '' ?>>Active</option>
             <option value="inactive" <?= $filter_status === 'inactive' ? 'selected' : '' ?>>Inactive</option>
             <option value="expired" <?= $filter_status === 'expired' ? 'selected' : '' ?>>Expired</option>
             <option value="suspended" <?= $filter_status === 'suspended' ? 'selected' : '' ?>>Suspended</option>
         </select>
-        
-        <select class="form-control" style="width: 150px;" onchange="window.location.href='?status=<?= $filter_status ?>&product='+this.value+'&search=<?= urlencode($search) ?>'">
+
+        <select class="form-control" onchange="window.location.href='?status=<?= htmlspecialchars(urlencode($filter_status), ENT_QUOTES) ?>&product='+encodeURIComponent(this.value)+'&search=<?= htmlspecialchars(urlencode($search), ENT_QUOTES) ?>'">
             <option value="">All Products</option>
             <?php foreach ($products as $product): ?>
                 <option value="<?= htmlspecialchars($product) ?>" <?= $filter_product === $product ? 'selected' : '' ?>>
@@ -405,7 +410,7 @@ include '../includes/header.php';
             <?php endforeach; ?>
         </select>
     </div>
-    
+
     <div class="table-wrapper">
         <table class="table">
             <thead>
@@ -414,7 +419,6 @@ include '../includes/header.php';
                         <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
                     </th>
                     <th>License Key</th>
-                    <th>Product</th>
                     <th>Status</th>
                     <th>Customer</th>
                     <th>Expires</th>
@@ -425,10 +429,8 @@ include '../includes/header.php';
             </thead>
             <tbody>
                 <?php if (empty($licenses)): ?>
-                    <tr>
-                        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            No licenses found
-                        </td>
+                    <tr class="empty-row">
+                        <td colspan="8">No licenses found</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($licenses as $license): ?>
@@ -437,91 +439,87 @@ include '../includes/header.php';
                             <input type="checkbox" class="license-checkbox" value="<?= $license['id'] ?>" onchange="updateBulkActions()">
                         </td>
                         <td>
-                            <?php
-                            // SECURITY: Mask license key in UI to prevent exposure via screenshots
-                            $license_key = $license['license_key'];
-                            $key_length = strlen($license_key);
-                            if ($key_length > 16) {
-                                $masked = substr($license_key, 0, 8) . '...' . substr($license_key, -8);
-                            } else {
-                                $masked = substr($license_key, 0, 4) . '...' . substr($license_key, -4);
-                            }
-                            ?>
-                            <code><?= htmlspecialchars($masked) ?></code>
-                            <button class="btn btn-sm btn-secondary" data-copy="<?= htmlspecialchars($license_key) ?>"
-                                    style="margin-left: 8px; padding: 4px 8px;" title="Copy full license key">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                            <?php // SECURITY: key disamarkan di tabel; key lengkap ada di popup detail & tombol copy ?>
+                            <code class="key-chip"><?= htmlspecialchars(ui_mask_key($license['license_key'])) ?></code>
+                            <span class="cell-sub"><?= htmlspecialchars($license['product_id']) ?></span>
                         </td>
-                        <td><?= htmlspecialchars($license['product_id']) ?></td>
                         <td>
-                            <span class="badge badge-<?= $license['status'] ?>">
-                                <?= ucfirst($license['status']) ?>
+                            <span class="badge badge-<?= htmlspecialchars($license['status']) ?>">
+                                <?= ucfirst(htmlspecialchars($license['status'])) ?>
                             </span>
                         </td>
                         <td>
                             <?php if ($license['customer_name']): ?>
-                                <div><?= htmlspecialchars($license['customer_name']) ?></div>
-                                <small style="color: var(--text-muted);"><?= htmlspecialchars($license['customer_email'] ?: '') ?></small>
+                                <?= htmlspecialchars($license['customer_name']) ?>
+                                <?php if ($license['customer_email']): ?>
+                                    <span class="cell-sub"><?= htmlspecialchars($license['customer_email']) ?></span>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <span style="color: var(--text-muted);">-</span>
+                                <span class="cell-muted">-</span>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($license['expires']): ?>
-                                <?php 
+                                <?php
                                     $days_left = (strtotime($license['expires']) - time()) / 86400;
-                                    $status_class = $days_left < 0 ? 'danger' : ($days_left <= 7 ? 'warning' : '');
+                                    $status_class = $days_left < 0 ? 'danger' : ($days_left <= 7 ? 'warning' : 'secondary');
                                 ?>
-                                <div><?= format_date($license['expires'], 'Y-m-d') ?></div>
+                                <?= format_date($license['expires'], 'Y-m-d') ?>
                                 <?php if ($days_left >= 0): ?>
-                                    <small class="badge badge-<?= $status_class ?>">
-                                        <?= floor($days_left) ?> days left
-                                    </small>
+                                    <span class="cell-sub"><span class="badge badge-<?= $status_class ?>"><?= floor($days_left) ?> days left</span></span>
+                                <?php else: ?>
+                                    <span class="cell-sub"><span class="badge badge-danger">Expired</span></span>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <span style="color: var(--text-muted);">Never</span>
+                                <span class="cell-muted">Never</span>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?= $license['activation_count'] ?> / <?= $license['activation_limit'] ?: '∞' ?>
                         </td>
                         <td>
-                            <div><?= format_date($license['created_at'], 'Y-m-d') ?></div>
-                            <small style="color: var(--text-muted);">by <?= htmlspecialchars($license['created_by_name'] ?: 'System') ?></small>
+                            <?= format_date($license['created_at'], 'Y-m-d') ?>
+                            <span class="cell-sub">by <?= htmlspecialchars($license['created_by_name'] ?: 'System') ?></span>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 5px;">
-                                <button class="btn btn-sm btn-primary" onclick="showEditModal(<?= htmlspecialchars(json_encode($license)) ?>)">
+                            <div class="row-actions">
+                                <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Copy license key"
+                                        data-copy="<?= htmlspecialchars($license['license_key']) ?>">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Detail"
+                                        data-modal-url="license-details.php?id=<?= (int) $license['id'] ?>&amp;modal=1"
+                                        data-modal-title="License Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Edit"
+                                        onclick="showEditModal(<?= htmlspecialchars(json_encode($license)) ?>)">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <a href="license-details.php?id=<?= $license['id'] ?>" class="btn btn-sm btn-secondary">
-                                    <i class="fas fa-eye"></i>
-                                </a>
                                 <?php if ($license['status'] === 'active'): ?>
-                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Suspend this license?');">
+                                    <form method="POST" onsubmit="return confirm('Suspend this license?');">
                                         <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                         <input type="hidden" name="action" value="suspend">
                                         <input type="hidden" name="license_id" value="<?= $license['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-warning">
+                                        <button type="submit" class="btn btn-sm btn-warning btn-icon" title="Suspend">
                                             <i class="fas fa-ban"></i>
                                         </button>
                                     </form>
                                 <?php elseif ($license['status'] === 'suspended'): ?>
-                                    <form method="POST" style="display: inline;">
+                                    <form method="POST">
                                         <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                         <input type="hidden" name="action" value="activate">
                                         <input type="hidden" name="license_id" value="<?= $license['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-success">
+                                        <button type="submit" class="btn btn-sm btn-success btn-icon" title="Activate">
                                             <i class="fas fa-check"></i>
                                         </button>
                                     </form>
                                 <?php endif; ?>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this license? This cannot be undone!');">
+                                <form method="POST" onsubmit="return confirm('Delete this license? This cannot be undone!');">
                                     <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="license_id" value="<?= $license['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">
+                                    <button type="submit" class="btn btn-sm btn-danger btn-icon" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -548,10 +546,10 @@ include '../includes/header.php';
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content modal-md">
         <div class="modal-header">
-            <h2>Edit License</h2>
-            <button class="modal-close">&times;</button>
+            <h2><i class="fas fa-edit"></i> Edit License</h2>
+            <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
         </div>
         <form method="POST" id="editForm">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
@@ -594,14 +592,168 @@ include '../includes/header.php';
                 <label class="form-label">Notes</label>
                 <textarea name="notes" class="form-control" id="edit_notes" rows="3"></textarea>
             </div>
-            
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="hideModal('editModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update License</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update License</button>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Generate Modal (form dikirim ke generate.php; logika pembuatan key tetap di sana) -->
+<div id="generateModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Generate License Keys</h2>
+            <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+        </div>
+        <form method="POST" action="generate.php" id="generateForm">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+
+            <div class="generate-form-grid">
+                <div>
+                    <div class="form-section-title"><i class="fas fa-cog"></i> License Configuration</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_count">Jumlah License Key</label>
+                        <input type="number" name="count" id="gen_count" class="form-control" value="1" min="1" max="100" required>
+                        <div class="form-text">Generate 1-100 license keys at once</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_product">Product ID</label>
+                        <input type="text" name="product_id" id="gen_product" class="form-control" value="apeiron-kit" required list="genProducts">
+                        <datalist id="genProducts">
+                            <?php foreach ($generate_products as $product): ?>
+                                <option value="<?= htmlspecialchars($product) ?>">
+                            <?php endforeach; ?>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_status">Initial Status</label>
+                        <select name="status" id="gen_status" class="form-control">
+                            <option value="inactive">Inactive</option>
+                            <option value="active">Active</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_expires">Expiration</label>
+                        <select name="expires" id="gen_expires" class="form-control">
+                            <option value="never">Never Expire</option>
+                            <option value="30">30 Days</option>
+                            <option value="90">90 Days</option>
+                            <option value="180">6 Months</option>
+                            <option value="365">1 Year</option>
+                            <option value="730">2 Years</option>
+                            <option value="custom">Custom Date</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="gen_custom_date_group" style="display: none;">
+                        <label class="form-label" for="gen_expires_date">Custom Expiration Date</label>
+                        <input type="date" name="expires_date" id="gen_expires_date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_limit">Activation Limit</label>
+                        <input type="number" name="activation_limit" id="gen_limit" class="form-control"
+                               value="<?= (int) get_setting('default_activation_limit', 1) ?>" min="0" required>
+                        <div class="form-text">0 = unlimited activations</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-section-title"><i class="fas fa-user"></i> Customer (Optional)</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_customer_name">Customer Name</label>
+                        <input type="text" name="customer_name" id="gen_customer_name" class="form-control" placeholder="Enter customer name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_customer_email">Customer Email</label>
+                        <input type="email" name="customer_email" id="gen_customer_email" class="form-control" placeholder="customer@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gen_notes">Notes</label>
+                        <textarea name="notes" id="gen_notes" class="form-control" rows="3" placeholder="Additional notes or comments..."></textarea>
+                    </div>
+
+                    <div class="form-section-title"><i class="fas fa-lock"></i> Domain Restrictions</div>
+
+                    <div class="form-group">
+                        <label class="check-row">
+                            <input type="checkbox" name="single_domain_only" value="1" id="gen_single_domain">
+                            <span><strong>Single Domain Only</strong> — license hanya bisa diaktifkan di 1 domain</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" id="gen_max_domains_group">
+                        <label class="form-label" for="gen_max_domains">Max Domains</label>
+                        <input type="number" name="max_domains" id="gen_max_domains" class="form-control" min="1" placeholder="Kosongkan untuk unlimited">
+                        <div class="form-text">Maksimal jumlah domain berbeda. Kosongkan = unlimited.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('generateModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="generateSubmit">
+                    <i class="fas fa-plus-circle"></i> Generate License Keys
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php if (!empty($generated_keys)): ?>
+<!-- Generated Modal: hasil generate, tampil sekali setelah redirect -->
+<div id="generatedModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h2><i class="fas fa-check-circle"></i> Generated License Keys <span class="badge badge-success"><?= count($generated_keys) ?> keys</span></h2>
+            <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+        </div>
+
+        <div class="alert alert-warning" style="margin-bottom: 16px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Salin key sekarang. Popup ini hanya tampil sekali.</span>
+        </div>
+
+        <div class="generated-keys-list">
+            <?php foreach ($generated_keys as $index => $key_data): ?>
+                <div class="generated-key-item">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="generated-key-index">#<?= $index + 1 ?></span>
+                        <code class="generated-key-code" style="flex: 1; min-width: 0; overflow-wrap: anywhere;"><?= htmlspecialchars($key_data['key']) ?></code>
+                        <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Copy key"
+                                data-copy="<?= htmlspecialchars($key_data['key']) ?>">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="cell-sub" style="margin-top: 8px; padding-left: 38px;">
+                        <?= htmlspecialchars($key_data['product']) ?>
+                        · Expires: <?= $key_data['expires'] ? format_date($key_data['expires'], 'Y-m-d') : 'Never' ?>
+                        · Limit: <?= $key_data['limit'] ?: 'Unlimited' ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="hideModal('generatedModal')">Close</button>
+            <button type="button" class="btn btn-primary"
+                    data-copy="<?= htmlspecialchars(implode("\n", array_column($generated_keys, 'key'))) ?>">
+                <i class="fas fa-copy"></i> Copy All
+            </button>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <script>
 function showEditModal(license) {
@@ -612,10 +764,37 @@ function showEditModal(license) {
     document.getElementById('edit_customer_name').value = license.customer_name || '';
     document.getElementById('edit_customer_email').value = license.customer_email || '';
     document.getElementById('edit_notes').value = license.notes || '';
+    hideModal('ajaxModal');
     showModal('editModal');
 }
 
+// Tombol Edit di dalam popup detail
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-edit-license]');
+    if (!btn) return;
+    e.preventDefault();
+    try {
+        showEditModal(JSON.parse(btn.getAttribute('data-edit-license')));
+    } catch (err) {
+        console.error(err);
+    }
+});
+
 // FEATURE: Bulk Operations JavaScript
+// ID terpilih dikirim sebagai selected_ids[] (array) sesuai yang dibaca server
+function setBulkIds(form, ids) {
+    const holder = form ? form.querySelector('.bulk-ids') : null;
+    if (!holder) return;
+    holder.innerHTML = '';
+    ids.forEach(function(id) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'selected_ids[]';
+        input.value = id;
+        holder.appendChild(input);
+    });
+}
+
 function toggleSelectAll(checkbox) {
     const checkboxes = document.querySelectorAll('.license-checkbox');
     checkboxes.forEach(cb => cb.checked = checkbox.checked);
@@ -638,30 +817,32 @@ function updateBulkActions() {
     }
     
     if (count > 0) {
-        bulkBar.style.display = 'block';
+        bulkBar.classList.add('show');
         selectedCount.textContent = count + ' selected';
         bulkDeleteBtn.disabled = false;
-        const bulkDeleteIds = document.getElementById('bulkDeleteIds');
-        if (bulkDeleteIds) bulkDeleteIds.value = JSON.stringify(selectedIds);
+        setBulkIds(document.getElementById('bulkDeleteForm'), selectedIds);
     } else {
-        bulkBar.style.display = 'none';
+        bulkBar.classList.remove('show');
         bulkUpdateBtn.disabled = true;
         bulkDeleteBtn.disabled = true;
+        setBulkIds(document.getElementById('bulkDeleteForm'), []);
     }
-    
+
     // Update status button
     if (bulkStatusSelect) {
-        bulkStatusSelect.onchange = function() {
-            if (this.value && count > 0) {
+        const syncStatus = function() {
+            const value = bulkStatusSelect.value;
+            const bulkNewStatus = document.getElementById('bulkNewStatus');
+            if (value && count > 0) {
                 bulkUpdateBtn.disabled = false;
-                const bulkNewStatus = document.getElementById('bulkNewStatus');
-                const bulkSelectedIds = document.getElementById('bulkSelectedIds');
-                if (bulkNewStatus) bulkNewStatus.value = this.value;
-                if (bulkSelectedIds) bulkSelectedIds.value = JSON.stringify(selectedIds);
+                if (bulkNewStatus) bulkNewStatus.value = value;
+                setBulkIds(document.getElementById('bulkStatusForm'), selectedIds);
             } else {
                 bulkUpdateBtn.disabled = true;
             }
         };
+        bulkStatusSelect.onchange = syncStatus;
+        syncStatus();
     }
 }
 
@@ -672,9 +853,60 @@ function clearSelection() {
     updateBulkActions();
 }
 
+// Form generate di popup
+function syncGenerateForm() {
+    const expires = document.getElementById('gen_expires');
+    const customGroup = document.getElementById('gen_custom_date_group');
+    if (expires && customGroup) {
+        customGroup.style.display = expires.value === 'custom' ? 'block' : 'none';
+    }
+    const single = document.getElementById('gen_single_domain');
+    const maxGroup = document.getElementById('gen_max_domains_group');
+    const maxInput = document.getElementById('gen_max_domains');
+    if (single && maxGroup) {
+        maxGroup.style.display = single.checked ? 'none' : 'block';
+        if (single.checked && maxInput) maxInput.value = '';
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateBulkActions();
+
+    const expires = document.getElementById('gen_expires');
+    const single = document.getElementById('gen_single_domain');
+    if (expires) expires.addEventListener('change', syncGenerateForm);
+    if (single) single.addEventListener('change', syncGenerateForm);
+    syncGenerateForm();
+
+    // Cegah submit ganda dan beri tanda proses
+    const genForm = document.getElementById('generateForm');
+    if (genForm) {
+        genForm.addEventListener('submit', function() {
+            const btn = document.getElementById('generateSubmit');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
+            }
+        });
+    }
+
+    // Popup yang dibuka otomatis
+    <?php if (!empty($generated_keys)): ?>
+    showModal('generatedModal');
+    <?php elseif ($open_generate): ?>
+    showModal('generateModal');
+    <?php elseif ($open_view_id > 0): ?>
+    openAjaxModal('license-details.php?id=<?= $open_view_id ?>&modal=1', 'License Details');
+    <?php endif; ?>
+
+    // Bersihkan ?generate / ?view dari alamat agar refresh tidak membuka popup lagi
+    if (window.history && window.history.replaceState && /[?&](generate|view)=/.test(window.location.search)) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('generate');
+        url.searchParams.delete('view');
+        window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+    }
 });
 </script>
 

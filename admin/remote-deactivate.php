@@ -151,6 +151,50 @@ try {
     $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
 }
 
+// Popup "View Activations": kembalikan potongan tabel saja (dimuat oleh main.js)
+if ($action === 'activations' && $license_id > 0 && isset($_GET['modal'])):
+?>
+<div data-modal-fragment>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Site URL</th>
+                    <th>Site Name</th>
+                    <th>IP Address</th>
+                    <th>Activated At</th>
+                    <th>Last Check</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($activations)): ?>
+                    <tr class="empty-row"><td colspan="6">No active activations found.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($activations as $activation): ?>
+                    <tr>
+                        <td><code class="key-chip key-chip-wide" title="<?= sanitize_output($activation['site_url']) ?>"><?= sanitize_output($activation['site_url']) ?></code></td>
+                        <td><?= sanitize_output($activation['site_name'] ?: '-') ?></td>
+                        <td><?= sanitize_output($activation['ip_address'] ?: '-') ?></td>
+                        <td><?= format_date($activation['activated_at']) ?></td>
+                        <td><?= $activation['last_check'] ? format_date($activation['last_check']) : 'Never' ?></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger"
+                                    onclick="showDeactivateModal(<?= (int) $activation['id'] ?>, '<?= htmlspecialchars($activation['site_url'], ENT_QUOTES) ?>', 'activation')">
+                                <i class="fas fa-ban"></i> Deactivate
+                            </button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php
+    exit;
+endif;
+
 include '../includes/header.php';
 ?>
 
@@ -176,33 +220,36 @@ include '../includes/header.php';
             </thead>
             <tbody>
                 <?php if (empty($licenses)): ?>
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            <i class="fas fa-check-circle fa-3x" style="margin-bottom: 15px; color: var(--success); opacity: 0.3;"></i><br>
-                            No active licenses with activations found.
-                        </td>
+                    <tr class="empty-row">
+                        <td colspan="6">No active licenses with activations found.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($licenses as $license): ?>
                     <tr>
-                        <td><code><?= sanitize_output($license['license_key']) ?></code></td>
+                        <td><code class="key-chip"><?= sanitize_output(ui_mask_key($license['license_key'])) ?></code></td>
                         <td><?= sanitize_output($license['product_id']) ?></td>
                         <td>
-                            <span class="badge badge-<?= $license['status'] ?>">
-                                <?= ucfirst($license['status']) ?>
+                            <span class="badge badge-<?= sanitize_output($license['status']) ?>">
+                                <?= ucfirst(sanitize_output($license['status'])) ?>
                             </span>
                         </td>
                         <td>
-                            <span class="badge badge-success"><?= $license['active_count'] ?></span>
+                            <span class="badge badge-success"><?= (int) $license['active_count'] ?></span>
                         </td>
-                        <td><?= $license['activation_count'] ?></td>
+                        <td><?= (int) $license['activation_count'] ?></td>
                         <td>
-                            <div style="display: flex; gap: 5px;">
-                                <a href="?action=activations&id=<?= $license['id'] ?>" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-eye"></i> View Activations
+                            <div class="row-actions">
+                                <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Copy license key"
+                                        data-copy="<?= htmlspecialchars($license['license_key']) ?>">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <a href="?action=activations&amp;id=<?= (int) $license['id'] ?>" class="btn btn-sm btn-secondary"
+                                   data-modal-url="remote-deactivate.php?action=activations&amp;id=<?= (int) $license['id'] ?>&amp;modal=1"
+                                   data-modal-title="Activations · <?= sanitize_output(ui_mask_key($license['license_key'])) ?>">
+                                    <i class="fas fa-eye"></i> Activations
                                 </a>
-                                <button type="button" class="btn btn-sm btn-danger" 
-                                        onclick="showDeactivateModal(<?= $license['id'] ?>, '<?= htmlspecialchars($license['license_key'], ENT_QUOTES) ?>', 'license')">
+                                <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="showDeactivateModal(<?= (int) $license['id'] ?>, '<?= htmlspecialchars($license['license_key'], ENT_QUOTES) ?>', 'license')">
                                     <i class="fas fa-ban"></i> Deactivate All
                                 </button>
                             </div>

@@ -252,16 +252,16 @@ include '../includes/header.php';
                             <td><?= $admin['last_login'] ? format_date($admin['last_login'], 'Y-m-d H:i') : '-' ?></td>
                             <td><?= format_date($admin['created_at'], 'Y-m-d H:i') ?></td>
                             <td>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <a href="admins.php?action=edit&id=<?= $admin['id'] ?>" class="btn btn-sm btn-secondary">
-                                        <i class="fas fa-edit"></i> Edit
+                                <div class="row-actions">
+                                    <a href="admins.php?action=edit&id=<?= $admin['id'] ?>" class="btn btn-sm btn-secondary btn-icon" title="Edit">
+                                        <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-secondary" onclick="showResetPasswordModal(<?= $admin['id'] ?>, '<?= htmlspecialchars($admin['username']) ?>')">
-                                        <i class="fas fa-key"></i> Reset Password
+                                    <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Reset Password" onclick="showResetPasswordModal(<?= $admin['id'] ?>, '<?= htmlspecialchars($admin['username']) ?>')">
+                                        <i class="fas fa-key"></i>
                                     </button>
                                     <?php if ($admin['id'] != $_SESSION['admin_id']): ?>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $admin['id'] ?>, '<?= htmlspecialchars($admin['username']) ?>')">
-                                            <i class="fas fa-trash"></i> Delete
+                                        <button type="button" class="btn btn-sm btn-danger btn-icon" title="Delete" onclick="confirmDelete(<?= $admin['id'] ?>, '<?= htmlspecialchars($admin['username']) ?>')">
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     <?php endif; ?>
                                 </div>

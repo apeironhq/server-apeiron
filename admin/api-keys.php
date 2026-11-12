@@ -237,17 +237,30 @@ include '../includes/header.php';
     <?php endif; ?>
     
     <?php if ($new_key): ?>
-        <div class="callout">
-            <h3>
-                <i class="fas fa-exclamation-triangle"></i> API Key Created!
-            </h3>
-            <p><strong>Simpan API Key ini dengan aman - hanya ditampilkan sekali!</strong></p>
-            <div class="form-label">API Key</div>
-            <code class="code-block"><?= htmlspecialchars($new_key['api_key']) ?></code>
-            <button type="button" class="btn btn-secondary" onclick="copyApiKey('<?= htmlspecialchars($new_key['api_key']) ?>')">
-                <i class="fas fa-copy"></i> Copy API Key
-            </button>
+        <!-- Popup: API key baru, tampil sekali -->
+        <div id="newKeyModal" class="modal">
+            <div class="modal-content modal-md">
+                <div class="modal-header">
+                    <h2><i class="fas fa-check-circle"></i> API Key Created</h2>
+                    <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+                </div>
+                <div class="callout">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Simpan sekarang</h3>
+                    <p style="margin-bottom: 0;">API key ini hanya ditampilkan sekali. Simpan di tempat yang aman.</p>
+                </div>
+                <div class="form-label">API Key</div>
+                <code class="code-block"><?= htmlspecialchars($new_key['api_key']) ?></code>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="hideModal('newKeyModal')">Close</button>
+                    <button type="button" class="btn btn-primary" data-copy="<?= htmlspecialchars($new_key['api_key']) ?>">
+                        <i class="fas fa-copy"></i> Copy API Key
+                    </button>
+                </div>
+            </div>
         </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() { showModal('newKeyModal'); });
+        </script>
     <?php endif; ?>
     
     <div class="table-responsive">
@@ -267,16 +280,13 @@ include '../includes/header.php';
             </thead>
             <tbody>
                 <?php if (empty($api_keys)): ?>
-                    <tr>
-                        <td colspan="9" class="text-center" style="padding: 40px;">
-                            <i class="fas fa-key" style="font-size: 48px; color: var(--text-muted); margin-bottom: 15px;"></i>
-                            <p>No API keys found. Generate your first API key to get started.</p>
-                        </td>
+                    <tr class="empty-row">
+                        <td colspan="9">No API keys found. Generate your first API key to get started.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($api_keys as $key): ?>
                         <tr>
-                            <td><strong><?= htmlspecialchars($key['key_name']) ?></strong></td>
+                            <td><strong class="key-chip key-chip-wide" title="<?= htmlspecialchars($key['key_name']) ?>" style="font-weight: var(--fw-medium); color: var(--text-heading);"><?= htmlspecialchars($key['key_name']) ?></strong></td>
                             <td><code><?= htmlspecialchars($key['api_key_prefix']) ?></code></td>
                             <td><?= htmlspecialchars($key['product_id']) ?></td>
                             <td>
@@ -302,15 +312,15 @@ include '../includes/header.php';
                             <td>
                                 <?php if ($key['last_used_at']): ?>
                                     <?= format_date($key['last_used_at']) ?>
-                                    <br><small><?= htmlspecialchars($key['last_used_ip'] ?? '') ?></small>
+                                    <span class="cell-sub key-chip" style="display: block; max-width: 200px;" title="<?= htmlspecialchars($key['last_used_ip'] ?? '') ?>"><?= htmlspecialchars($key['last_used_ip'] ?? '') ?></span>
                                 <?php else: ?>
                                     <span class="text-muted">Never</span>
                                 <?php endif; ?>
                             </td>
                             <td><?= number_format($key['usage_count'] ?? 0) ?></td>
                             <td>
-                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                    <button type="button" class="btn btn-sm btn-secondary"
+                                <div class="row-actions">
+                                    <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Edit API Key"
                                             onclick="editKey(
                                                 <?= $key['id'] ?>,
                                                 '<?= htmlspecialchars($key['key_name']) ?>',
@@ -330,21 +340,21 @@ include '../includes/header.php';
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <?php if ($key['is_active']): ?>
-                                        <form method="POST" action="api-keys.php" id="revoke-form-<?= $key['id'] ?>" style="display: inline-block; margin: 0; padding: 0;" onsubmit="console.log('Revoke form submitting for key <?= $key['id'] ?>'); return confirm('Apakah Anda yakin ingin menonaktifkan API key ini?');">
+                                        <form method="POST" action="api-keys.php" id="revoke-form-<?= $key['id'] ?>" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan API key ini?');">
                                             <input type="hidden" name="csrf_token" value="<?= $page_csrf_token ?>">
                                             <input type="hidden" name="action" value="revoke">
                                             <input type="hidden" name="key_id" value="<?= $key['id'] ?>">
-                                            <button type="submit" name="revoke_submit" class="btn btn-sm btn-warning" title="Revoke API Key" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; pointer-events: auto;">
-                                                <i class="fas fa-ban"></i> <span>Revoke</span>
+                                            <button type="submit" name="revoke_submit" class="btn btn-sm btn-warning btn-icon" title="Revoke API Key">
+                                                <i class="fas fa-ban"></i>
                                             </button>
                                         </form>
                                     <?php endif; ?>
-                                    <form method="POST" action="api-keys.php" id="delete-form-<?= $key['id'] ?>" style="display: inline-block; margin: 0; padding: 0;" onsubmit="console.log('Delete form submitting for key <?= $key['id'] ?>'); return confirm('Apakah Anda yakin ingin menghapus API key ini? Tindakan ini tidak dapat dibatalkan!');">
+                                    <form method="POST" action="api-keys.php" id="delete-form-<?= $key['id'] ?>" onsubmit="return confirm('Apakah Anda yakin ingin menghapus API key ini? Tindakan ini tidak dapat dibatalkan!');">
                                         <input type="hidden" name="csrf_token" value="<?= $page_csrf_token ?>">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="key_id" value="<?= $key['id'] ?>">
-                                        <button type="submit" name="delete_submit" class="btn btn-sm btn-danger" title="Delete API Key" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; pointer-events: auto;">
-                                            <i class="fas fa-trash"></i> <span>Delete</span>
+                                        <button type="submit" name="delete_submit" class="btn btn-sm btn-danger btn-icon" title="Delete API Key">
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
                                 </div>
