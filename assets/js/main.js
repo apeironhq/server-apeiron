@@ -148,6 +148,156 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ---------------------------------------------------------------------------
+// Notifikasi request API yang gagal (lonceng di topbar)
+// ---------------------------------------------------------------------------
+(function() {
+    const SEEN_KEY = 'apeiron_notif_seen_id';
+    const POLL_MS = 60000;
+    let lastLatest = null; // id terbaru dari pengecekan sebelumnya (null = belum pernah)
+    let items = [];
+
+    function readSeen() {
+        try { return parseInt(localStorage.getItem(SEEN_KEY) || '0', 10) || 0; } catch (e) { return 0; }
+    }
+    function writeSeen(id) {
+        try { localStorage.setItem(SEEN_KEY, String(id)); } catch (e) {}
+    }
+    function esc(v) {
+        return String(v == null ? '' : v).replace(/[&<>"']/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function tone(status) {
+        return status >= 500 ? 'danger' : 'warning';
+    }
+
+    function render(root, data) {
+        const badge = document.getElementById('notifBadge');
+        const list = document.getElementById('notifList');
+        const sub = document.getElementById('notifSub');
+        const seen = readSeen();
+        const unseen = items.filter(function(it) { return it.id > seen; }).length;
+
+        if (badge) {
+            badge.hidden = unseen === 0;
+            badge.textContent = unseen > 9 ? '9+' : String(unseen);
+        }
+        root.classList.toggle('has-unseen', unseen > 0);
+
+        if (sub) {
+            if (data && data.ok === false) {
+                sub.textContent = data.error || 'Data belum tersedia';
+            } else if (data && data.logging_enabled === false) {
+                sub.textContent = 'API Logging nonaktif';
+            } else {
+                sub.textContent = (data && data.failed_24h ? data.failed_24h : 0) + ' gagal dalam 24 jam';
+            }
+        }
+
+        if (!list) return;
+        if (!items.length) {
+            list.innerHTML = '<div class="notif-empty"><i class="fas fa-check-circle"></i><span>Tidak ada request gagal.</span></div>';
+            return;
+        }
+        const base = root.getAttribute('data-requests-url') || 'requests.php';
+        list.innerHTML = items.map(function(it) {
+            return '<button type="button" class="notif-item' + (it.id > seen ? ' is-new' : '') + '"' +
+                ' data-modal-url="' + esc(base + '?detail=' + it.id + '&modal=1') + '"' +
+                ' data-modal-title="' + esc('Request #' + it.id) + '">' +
+                '<span class="notif-icon tone-' + tone(it.status) + '"><i class="fas fa-exclamation-triangle"></i></span>' +
+                '<span class="notif-body">' +
+                    '<span class="notif-title">' + esc(it.message) + ' <span class="badge badge-' + tone(it.status) + '">' + esc(it.status) + '</span></span>' +
+                    '<span class="notif-text">' + esc(it.explain) + '</span>' +
+                    '<span class="notif-meta">' + esc(it.site || '(tanpa website)') + ' · ' + esc(it.endpoint) + (it.ago ? ' · ' + esc(it.ago) : '') + '</span>' +
+                '</span>' +
+            '</button>';
+        }).join('');
+    }
+
+    function toast(it, extra) {
+        const host = document.getElementById('toastHost');
+        if (!host) return;
+        const el = document.createElement('div');
+        el.className = 'toast tone-' + tone(it.status);
+        el.setAttribute('role', 'status');
+        el.innerHTML =
+            '<span class="toast-icon"><i class="fas fa-exclamation-triangle"></i></span>' +
+            '<span class="toast-body">' +
+                '<strong>Request gagal' + (extra > 0 ? ' (+' + extra + ' lainnya)' : '') + '</strong>' +
+                '<span>' + esc(it.message) + ' — ' + esc(it.site || '(tanpa website)') + '</span>' +
+                '<span class="toast-sub">' + esc(it.explain) + '</span>' +
+            '</span>' +
+            '<button type="button" class="toast-close" aria-label="Tutup">&times;</button>';
+        el.querySelector('.toast-close').addEventListener('click', function() { el.remove(); });
+        host.appendChild(el);
+        setTimeout(function() { el.classList.add('is-leaving'); setTimeout(function() { el.remove(); }, 300); }, 8000);
+    }
+
+    function load(root) {
+        const url = root.getAttribute('data-url');
+        if (!url) return;
+        fetch(url, { credentials: 'same-origin', cache: 'no-store', headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                items = Array.isArray(data.items) ? data.items : [];
+                const latest = data.latest_id || 0;
+                // Toast hanya untuk kegagalan yang masuk saat halaman terbuka
+                if (lastLatest !== null && latest > lastLatest) {
+                    const fresh = items.filter(function(it) { return it.id > lastLatest; });
+                    if (fresh.length) toast(fresh[0], fresh.length - 1);
+                }
+                lastLatest = latest;
+                render(root, data);
+            })
+            .catch(function() { /* sesi habis atau jaringan putus: abaikan diam-diam */ });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const root = document.getElementById('notif');
+        const bell = document.getElementById('notifBell');
+        const panel = document.getElementById('notifPanel');
+        if (!root || !bell || !panel) return;
+
+        function close() {
+            panel.hidden = true;
+            bell.setAttribute('aria-expanded', 'false');
+        }
+
+        bell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const open = panel.hidden;
+            panel.hidden = !open;
+            bell.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function(e) {
+            if (!panel.hidden && !root.contains(e.target)) close();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') close();
+        });
+        // Klik salah satu notifikasi membuka popup detail; tutup panelnya
+        panel.addEventListener('click', function(e) {
+            if (e.target.closest('.notif-item')) close();
+        });
+
+        const markRead = document.getElementById('notifMarkRead');
+        if (markRead) {
+            markRead.addEventListener('click', function() {
+                if (items.length) writeSeen(items[0].id);
+                render(root, null);
+                const sub = document.getElementById('notifSub');
+                if (sub) sub.textContent = 'Semua sudah dibaca';
+            });
+        }
+
+        load(root);
+        setInterval(function() {
+            if (!document.hidden) load(root);
+        }, POLL_MS);
+    });
+})();
+
 // Salin teks; fallback untuk browser tanpa Clipboard API
 function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {

@@ -16,6 +16,9 @@
         </div> <!-- end app-main -->
     </div> <!-- end app-shell -->
 
+    <!-- Wadah toast notifikasi -->
+    <div class="toast-host" id="toastHost" aria-live="polite"></div>
+
     <!-- Popup generik: isinya dimuat lewat [data-modal-url] (lihat main.js) -->
     <div id="ajaxModal" class="modal">
         <div class="modal-content modal-lg">

@@ -127,6 +127,27 @@ if (isset($_SESSION['admin_role']) && $_SESSION['admin_role'] === 'super_admin')
                 <span class="topbar-title"><?= htmlspecialchars($page_title) ?></span>
 
                 <div class="nav-user">
+                    <!-- Notifikasi request API yang gagal (data: notifications.php, logika: main.js) -->
+                    <div class="notif" id="notif" data-url="<?= $admin_path ?>notifications.php" data-requests-url="<?= $admin_path ?>requests.php">
+                        <button class="btn-theme-toggle notif-bell" id="notifBell" type="button" title="Notifikasi request gagal" aria-label="Notifikasi request gagal" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            <span class="notif-badge" id="notifBadge" hidden>0</span>
+                        </button>
+                        <div class="notif-panel" id="notifPanel" hidden>
+                            <div class="notif-head">
+                                <div>
+                                    <strong>Request Gagal</strong>
+                                    <span class="notif-sub" id="notifSub">Memuat…</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary" id="notifMarkRead">Tandai dibaca</button>
+                            </div>
+                            <div class="notif-list" id="notifList"></div>
+                            <a class="notif-foot" href="<?= $admin_path ?>requests.php?tab=requests&amp;status=failed">
+                                Lihat semua request gagal <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
                     <button class="btn-theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema" type="button">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
