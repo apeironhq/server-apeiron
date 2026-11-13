@@ -747,9 +747,12 @@ include '../includes/header.php';
                 Kirim test email untuk memastikan konfigurasi sudah benar
             </p>
             <div class="test-email-form">
-                <input type="email" name="test_email" class="form-control" 
-                       placeholder="masukkan-email@test.com" required>
-                <button type="submit" name="action" value="test_email" class="btn btn-secondary">
+                <!-- Tidak "required": kolom ini satu form dengan Save Email Settings,
+                     jadi wajib-isi hanya dicek saat tombol Send Test diklik -->
+                <input type="email" name="test_email" class="form-control"
+                       placeholder="masukkan-email@test.com">
+                <button type="submit" name="action" value="test_email" class="btn btn-secondary"
+                        onclick="var i = this.form.elements['test_email']; i.required = true; if (!i.reportValidity()) { i.required = false; return false; }">
                     <i class="fas fa-paper-plane"></i> Send Test
                 </button>
             </div>
