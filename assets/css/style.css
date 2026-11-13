@@ -391,8 +391,6 @@ hr {
     min-height: 0;
     overflow-y: auto;
     padding: 24px 16px 16px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--n-300) transparent;
 }
 
 .nav-label {
@@ -1291,24 +1289,33 @@ pre {
 }
 
 .modal-content {
+    --modal-pad: 24px;
     width: 100%;
     max-width: 500px;
     max-height: 90vh;
+    max-height: calc(100dvh - 32px);
+    overflow-x: hidden;
     overflow-y: auto;
-    padding: 24px;
+    padding: var(--modal-pad);
     background: var(--bg-surface);
     border: 1px solid var(--border-soft);
     border-radius: var(--r);
     box-shadow: var(--sh-pop);
+    overscroll-behavior: contain;
 }
 
+/* Judul popup tetap terlihat (dan tombol tutup bisa diklik) saat isi digulir */
 .modal-header {
+    position: sticky;
+    top: calc(-1 * var(--modal-pad, 24px));
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin: calc(-1 * var(--modal-pad, 24px)) calc(-1 * var(--modal-pad, 24px)) 20px;
+    padding: var(--modal-pad, 24px) var(--modal-pad, 24px) 16px;
+    background: var(--bg-surface);
     border-bottom: 1px solid var(--border-soft);
 }
 
@@ -2014,6 +2021,60 @@ pre {
 
     .topbar-title {
         font-size: var(--fs-label);
+    }
+}
+
+/* Popup di layar kecil: tepi lebih rapat */
+@media (max-width: 640px) {
+    .modal {
+        padding: 8px;
+    }
+
+    .modal-content {
+        --modal-pad: 16px;
+        max-height: calc(100dvh - 16px);
+    }
+
+    .modal-footer {
+        flex-wrap: wrap;
+    }
+
+    .modal-footer .btn {
+        flex: 1;
+    }
+}
+
+/* =================================================================
+   Scrollbar: 1px di seluruh halaman, tabel, dan popup
+   (Chrome/Edge/Safari). Firefox tidak mendukung lebar piksel, jadi
+   memakai ukuran tertipis yang tersedia.
+   ================================================================= */
+*::-webkit-scrollbar {
+    width: 1px;
+    height: 1px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--n-300);
+    border-radius: 1px;
+}
+
+*::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Hanya Firefox: scrollbar-width di Chrome justru mematikan aturan di atas */
+@supports (-moz-appearance: none) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--n-300) transparent;
     }
 }
 
