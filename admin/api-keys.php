@@ -340,7 +340,9 @@ include '../includes/header.php';
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <?php if ($key['is_active']): ?>
-                                        <form method="POST" action="api-keys.php" id="revoke-form-<?= $key['id'] ?>" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan API key ini?');">
+                                        <form method="POST" action="api-keys.php" id="revoke-form-<?= $key['id'] ?>"
+                                              data-confirm="API key &quot;<?= htmlspecialchars($key['key_name']) ?>&quot; akan dinonaktifkan. Website yang memakainya tidak bisa melakukan request lagi."
+                                              data-confirm-title="Revoke API key?" data-confirm-ok="Ya, revoke" data-confirm-variant="warning">
                                             <input type="hidden" name="csrf_token" value="<?= $page_csrf_token ?>">
                                             <input type="hidden" name="action" value="revoke">
                                             <input type="hidden" name="key_id" value="<?= $key['id'] ?>">
@@ -349,7 +351,9 @@ include '../includes/header.php';
                                             </button>
                                         </form>
                                     <?php endif; ?>
-                                    <form method="POST" action="api-keys.php" id="delete-form-<?= $key['id'] ?>" onsubmit="return confirm('Apakah Anda yakin ingin menghapus API key ini? Tindakan ini tidak dapat dibatalkan!');">
+                                    <form method="POST" action="api-keys.php" id="delete-form-<?= $key['id'] ?>"
+                                          data-confirm="API key &quot;<?= htmlspecialchars($key['key_name']) ?>&quot; akan dihapus permanen. Tindakan ini tidak dapat dibatalkan."
+                                          data-confirm-title="Hapus API key?" data-confirm-ok="Ya, hapus">
                                         <input type="hidden" name="csrf_token" value="<?= $page_csrf_token ?>">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="key_id" value="<?= $key['id'] ?>">
@@ -514,8 +518,8 @@ document.addEventListener('click', function(e) {
 });
 
 function copyApiKey(key) {
-    navigator.clipboard.writeText(key).then(() => {
-        alert('API Key copied to clipboard!');
+    copyText(key).then(() => {
+        appToast('API key disalin ke clipboard.', 'success');
     });
 }
 

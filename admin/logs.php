@@ -279,31 +279,48 @@ include '../includes/header.php';
 
 <script>
 function confirmDeleteLog(logId, action) {
-    if (confirm(`Apakah Anda yakin ingin menghapus activity log "${action}" (ID: ${logId})?`)) {
+    appConfirm({
+        title: 'Hapus activity log?',
+        message: `Log "${action}" (ID: ${logId}) akan dihapus permanen.`,
+        confirmText: 'Ya, hapus',
+        variant: 'danger'
+    }).then(function(ok) {
+        if (!ok) return;
         document.getElementById('delete_log_id').value = logId;
         document.getElementById('deleteLogForm').submit();
-    }
+    });
 }
 
 function confirmDeleteAll(count, filterAction, filterType) {
-    let message = `PERINGATAN: Anda akan menghapus ${count} activity log`;
-    
+    let message = `Anda akan menghapus ${count} activity log`;
+
     if (filterAction || filterType) {
         message += ' yang sesuai dengan filter saat ini';
         if (filterAction) message += ` (Action: ${filterAction})`;
         if (filterType) message += ` (Type: ${filterType})`;
     } else {
-        message += ' SEMUA';
+        message += ' (SEMUA log)';
     }
-    
-    message += '.\n\nTindakan ini TIDAK DAPAT DIBATALKAN!\n\nApakah Anda yakin ingin melanjutkan?';
-    
-    if (confirm(message)) {
-        // Double confirmation for delete all
-        if (confirm('Konfirmasi terakhir: Hapus semua activity log yang dipilih?')) {
-            document.getElementById('deleteAllLogsForm').submit();
-        }
-    }
+
+    message += '.\n\nTindakan ini tidak dapat dibatalkan.';
+
+    // Tetap dua langkah konfirmasi seperti sebelumnya
+    appConfirm({
+        title: 'Hapus activity log?',
+        message: message,
+        confirmText: 'Lanjutkan',
+        variant: 'danger'
+    }).then(function(ok) {
+        if (!ok) return null;
+        return appConfirm({
+            title: 'Konfirmasi terakhir',
+            message: 'Hapus semua activity log yang dipilih sekarang?',
+            confirmText: 'Ya, hapus semua',
+            variant: 'danger'
+        });
+    }).then(function(ok) {
+        if (ok) document.getElementById('deleteAllLogsForm').submit();
+    });
 }
 </script>
 

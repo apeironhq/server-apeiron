@@ -362,7 +362,9 @@ include '../includes/header.php';
             <option value="expired">Expired</option>
             <option value="suspended">Suspended</option>
         </select>
-        <form method="POST" id="bulkStatusForm" onsubmit="return confirm('Update status untuk license yang dipilih?');">
+        <form method="POST" id="bulkStatusForm"
+              data-confirm="Status semua license yang dipilih akan diubah."
+              data-confirm-title="Update status license?" data-confirm-ok="Ya, update" data-confirm-variant="primary">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <input type="hidden" name="action" value="bulk_update_status">
             <input type="hidden" name="new_status" id="bulkNewStatus">
@@ -371,7 +373,9 @@ include '../includes/header.php';
                 <i class="fas fa-sync"></i> Update Status
             </button>
         </form>
-        <form method="POST" id="bulkDeleteForm" onsubmit="return confirm('Hapus license yang dipilih? Tindakan ini tidak dapat dibatalkan!');">
+        <form method="POST" id="bulkDeleteForm"
+              data-confirm="Semua license yang dipilih akan dihapus permanen. Tindakan ini tidak dapat dibatalkan."
+              data-confirm-title="Hapus license terpilih?" data-confirm-ok="Ya, hapus">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <input type="hidden" name="action" value="bulk_delete">
             <span class="bulk-ids"></span>
@@ -497,7 +501,9 @@ include '../includes/header.php';
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <?php if ($license['status'] === 'active'): ?>
-                                    <form method="POST" onsubmit="return confirm('Suspend this license?');">
+                                    <form method="POST"
+                                          data-confirm="License <?= htmlspecialchars(ui_mask_key($license['license_key'])) ?> akan di-suspend dan tidak bisa dipakai sampai diaktifkan lagi."
+                                          data-confirm-title="Suspend license?" data-confirm-ok="Ya, suspend" data-confirm-variant="warning">
                                         <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                         <input type="hidden" name="action" value="suspend">
                                         <input type="hidden" name="license_id" value="<?= $license['id'] ?>">
@@ -515,7 +521,9 @@ include '../includes/header.php';
                                         </button>
                                     </form>
                                 <?php endif; ?>
-                                <form method="POST" onsubmit="return confirm('Delete this license? This cannot be undone!');">
+                                <form method="POST"
+                                      data-confirm="License <?= htmlspecialchars(ui_mask_key($license['license_key'])) ?> akan dihapus permanen. Tindakan ini tidak dapat dibatalkan."
+                                      data-confirm-title="Hapus license?" data-confirm-ok="Ya, hapus">
                                     <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="license_id" value="<?= $license['id'] ?>">

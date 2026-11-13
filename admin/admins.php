@@ -332,10 +332,16 @@ function closeResetPasswordModal() {
 }
 
 function confirmDelete(adminId, username) {
-    if (confirm(`Apakah Anda yakin ingin menghapus admin "${username}"?`)) {
+    appConfirm({
+        title: 'Hapus admin?',
+        message: `Akun admin "${username}" akan dihapus dan tidak bisa login lagi.`,
+        confirmText: 'Ya, hapus',
+        variant: 'danger'
+    }).then(function(ok) {
+        if (!ok) return;
         document.getElementById('delete_admin_id').value = adminId;
         document.getElementById('deleteForm').submit();
-    }
+    });
 }
 </script>
 

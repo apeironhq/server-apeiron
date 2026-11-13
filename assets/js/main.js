@@ -12,13 +12,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
     
-    // Confirm delete actions
-    const deleteButtons = document.querySelectorAll('[data-confirm-delete]');
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to delete this item?')) {
-                e.preventDefault();
-            }
+    // Confirm delete actions (memakai popup konfirmasi bersama)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-confirm-delete]');
+        if (!btn || btn.dataset.confirmed === '1') return;
+        e.preventDefault();
+        appConfirm({
+            title: 'Hapus item?',
+            message: 'Item ini akan dihapus permanen dan tidak dapat dikembalikan.',
+            confirmText: 'Ya, hapus',
+            variant: 'danger'
+        }).then(function(ok) {
+            if (!ok) return;
+            btn.dataset.confirmed = '1';
+            btn.click();
+            delete btn.dataset.confirmed;
         });
     });
     
@@ -93,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!valid) {
                 e.preventDefault();
-                alert('Please fill in all required fields');
+                appToast('Mohon lengkapi semua kolom yang wajib diisi.', 'warning');
             }
         });
     });
@@ -134,6 +142,135 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ---------------------------------------------------------------------------
+// Popup konfirmasi bersama — pengganti confirm() bawaan browser
+//
+//   appConfirm({ title, message, confirmText, variant }) -> Promise<boolean>
+//   variant: 'danger' (hapus), 'warning' (suspend/revoke), 'primary' (lainnya)
+//
+//   Form cukup diberi atribut:
+//     <form data-confirm="Pesan" data-confirm-title="Judul"
+//           data-confirm-ok="Teks tombol" data-confirm-variant="danger">
+// ---------------------------------------------------------------------------
+(function() {
+    let resolver = null;
+    let lastFocus = null;
+
+    function els() {
+        return {
+            modal: document.getElementById('confirmModal'),
+            title: document.getElementById('confirmTitle'),
+            message: document.getElementById('confirmMessage'),
+            icon: document.getElementById('confirmIcon'),
+            ok: document.getElementById('confirmOk'),
+            cancel: document.getElementById('confirmCancel')
+        };
+    }
+
+    function finish(result) {
+        const e = els();
+        if (e.modal) e.modal.classList.remove('show');
+        if (resolver) {
+            const r = resolver;
+            resolver = null;
+            r(result);
+        }
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+    }
+
+    window.appConfirm = function(opts) {
+        opts = opts || {};
+        const e = els();
+        // Cadangan bila popup tidak ada di halaman (mis. halaman tanpa footer)
+        if (!e.modal) return Promise.resolve(window.confirm(opts.message || 'Lanjutkan?'));
+
+        if (resolver) finish(false);
+        const variant = opts.variant || 'danger';
+        const icons = { danger: 'fa-trash-alt', warning: 'fa-exclamation-triangle', primary: 'fa-question-circle' };
+
+        e.title.textContent = opts.title || 'Konfirmasi';
+        e.message.textContent = opts.message || 'Apakah Anda yakin?';
+        e.icon.className = 'confirm-icon tone-' + variant;
+        e.icon.innerHTML = '<i class="fas ' + (icons[variant] || icons.danger) + '"></i>';
+        e.ok.className = 'btn ' + (variant === 'primary' ? 'btn-primary' : variant === 'warning' ? 'btn-warning-solid' : 'btn-danger-solid');
+        e.ok.textContent = opts.confirmText || 'Ya, lanjutkan';
+        e.cancel.textContent = opts.cancelText || 'Batal';
+
+        lastFocus = document.activeElement;
+        e.modal.classList.add('show');
+        setTimeout(function() { e.cancel.focus(); }, 30);
+
+        return new Promise(function(resolve) { resolver = resolve; });
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const e = els();
+        if (!e.modal) return;
+        e.ok.addEventListener('click', function() { finish(true); });
+        e.cancel.addEventListener('click', function() { finish(false); });
+        // Klik di luar kotak atau Escape = batal
+        e.modal.addEventListener('click', function(ev) { if (ev.target === e.modal) finish(false); });
+        document.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Escape' && resolver) {
+                // Hanya tutup konfirmasi, jangan ikut menutup popup di bawahnya
+                ev.stopPropagation();
+                finish(false);
+            }
+        }, true);
+    });
+
+    // Form dengan data-confirm: tahan submit, tampilkan popup, lalu kirim ulang
+    // lewat requestSubmit() supaya tombol yang diklik (name/value) ikut terkirim.
+    document.addEventListener('submit', function(ev) {
+        const form = ev.target;
+        if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-confirm')) return;
+        if (form.dataset.confirmed === '1') {
+            delete form.dataset.confirmed;
+            return;
+        }
+        ev.preventDefault();
+        const submitter = ev.submitter || null;
+        window.appConfirm({
+            title: form.getAttribute('data-confirm-title') || 'Konfirmasi',
+            message: form.getAttribute('data-confirm'),
+            confirmText: form.getAttribute('data-confirm-ok') || 'Ya, lanjutkan',
+            variant: form.getAttribute('data-confirm-variant') || 'danger'
+        }).then(function(ok) {
+            if (!ok) return;
+            form.dataset.confirmed = '1';
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit(submitter && submitter.form === form ? submitter : undefined);
+            } else {
+                if (submitter && submitter.name) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = submitter.name;
+                    hidden.value = submitter.value;
+                    form.appendChild(hidden);
+                }
+                form.submit();
+            }
+        });
+    }, true);
+})();
+
+// Toast sederhana untuk pesan singkat (pengganti alert())
+window.appToast = function(message, tone) {
+    const host = document.getElementById('toastHost');
+    if (!host) return;
+    const el = document.createElement('div');
+    el.className = 'toast tone-' + (tone || 'warning');
+    el.setAttribute('role', 'status');
+    const icon = tone === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    el.innerHTML = '<span class="toast-icon"><i class="fas ' + icon + '"></i></span>' +
+        '<span class="toast-body"><span></span></span>' +
+        '<button type="button" class="toast-close" aria-label="Tutup">&times;</button>';
+    el.querySelector('.toast-body span').textContent = message;
+    el.querySelector('.toast-close').addEventListener('click', function() { el.remove(); });
+    host.appendChild(el);
+    setTimeout(function() { el.classList.add('is-leaving'); setTimeout(function() { el.remove(); }, 300); }, 5000);
+};
 
 // ---------------------------------------------------------------------------
 // Notifikasi request API yang gagal (lonceng di topbar)

@@ -19,6 +19,23 @@
     <!-- Wadah toast notifikasi -->
     <div class="toast-host" id="toastHost" aria-live="polite"></div>
 
+    <!-- Popup konfirmasi bersama (dipakai appConfirm() di main.js, pengganti confirm() browser) -->
+    <div id="confirmModal" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+        <div class="modal-content modal-confirm">
+            <div class="confirm-body">
+                <span class="confirm-icon" id="confirmIcon"><i class="fas fa-exclamation-triangle"></i></span>
+                <div class="confirm-text">
+                    <h2 id="confirmTitle">Konfirmasi</h2>
+                    <p id="confirmMessage"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="confirmCancel">Batal</button>
+                <button type="button" class="btn btn-danger" id="confirmOk">Ya, lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Popup generik: isinya dimuat lewat [data-modal-url] (lihat main.js) -->
     <div id="ajaxModal" class="modal">
         <div class="modal-content modal-lg">

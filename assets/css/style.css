@@ -2111,6 +2111,83 @@ pre {
     font-weight: var(--fw-medium);
 }
 
+/* Popup konfirmasi (pengganti confirm() browser) */
+#confirmModal {
+    z-index: 2050;
+}
+
+.modal-content.modal-confirm {
+    max-width: 440px;
+}
+
+.confirm-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.confirm-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: var(--r);
+    font-size: 17px;
+    background: var(--err-soft);
+    color: var(--err);
+}
+
+.confirm-icon.tone-warning {
+    background: var(--warn-soft);
+    color: var(--warn);
+}
+
+.confirm-icon.tone-primary {
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+}
+
+.confirm-text {
+    min-width: 0;
+}
+
+.confirm-text h2 {
+    margin-bottom: 6px;
+    font-size: var(--fs-h2);
+}
+
+.confirm-text p {
+    color: var(--text-body);
+    line-height: 1.55;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* Tombol aksi berbahaya yang solid (dipakai di popup konfirmasi) */
+.btn-danger-solid {
+    background: var(--err);
+    border-color: var(--err);
+    color: #fff;
+}
+
+.btn-danger-solid:hover:not(:disabled) {
+    background: var(--err-hover);
+    border-color: var(--err-hover);
+    color: #fff;
+}
+
+.btn-warning-solid {
+    background: var(--warn);
+    border-color: var(--warn);
+    color: #fff;
+}
+
+.btn-warning-solid:hover:not(:disabled) {
+    filter: brightness(0.92);
+    color: #fff;
+}
+
 /* Toast */
 .toast-host {
     position: fixed;
