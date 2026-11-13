@@ -33,6 +33,7 @@ $__nav_main = [
     ['licenses.php', 'fa-id-card', 'Licenses'],
     ['analytics.php', 'fa-chart-bar', 'Analytics'],
     ['activations.php', 'fa-plug', 'Activations'],
+    ['requests.php', 'fa-satellite-dish', 'API Requests'],
     ['api-keys.php', 'fa-key', 'API Keys'],
 ];
 $__nav_more = [
