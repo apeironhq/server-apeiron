@@ -616,12 +616,18 @@ hr {
 }
 
 /* ---- Area konten ---- */
+/* Konten selalu mengisi penuh lebar layar (tanpa ruang kosong di monitor besar) */
 .container {
     flex: 1;
     width: 100%;
-    max-width: var(--content-max);
-    margin: 0 auto;
+    margin: 0;
     padding: 24px;
+}
+
+@media (min-width: 1600px) {
+    .container {
+        padding: 28px 32px;
+    }
 }
 
 /* =================================================================
@@ -1236,7 +1242,6 @@ pre {
 }
 
 .footer-content {
-    max-width: var(--content-max);
     margin: 0 auto;
     text-align: center;
     color: var(--text-muted);
@@ -1655,6 +1660,61 @@ pre {
     font-size: var(--fs-caption);
     color: var(--text-muted);
     overflow-wrap: anywhere;
+}
+
+/* =================================================================
+   Dashboard
+   ================================================================= */
+.dash-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.dash-hero-text h1 {
+    font-size: var(--fs-h1);
+    margin-bottom: 4px;
+}
+
+.dash-hero-text p {
+    font-size: var(--fs-label);
+    color: var(--text-muted);
+}
+
+.dash-hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Kartu statistik yang bisa diklik */
+a.stat-link {
+    color: inherit;
+    text-decoration: none;
+    transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+a.stat-link:hover {
+    color: inherit;
+    border-color: var(--brand-border);
+    box-shadow: var(--sh-raise);
+}
+
+a.stat-link:focus-visible {
+    outline-offset: 2px;
+}
+
+/* Dua kartu tabel sejajar dengan tinggi sama */
+.dash-grid {
+    align-items: stretch;
+}
+
+.dash-card {
+    display: flex;
+    flex-direction: column;
 }
 
 /* Grup tombol aksi di baris tabel: ikon seragam, satu baris */
@@ -2385,7 +2445,58 @@ pre {
     }
 }
 
+@media (max-width: 640px) {
+    .dash-hero-actions {
+        width: 100%;
+    }
+
+    .dash-hero-actions .btn {
+        flex: 1;
+    }
+}
+
 @media (max-width: 480px) {
+    .stats-grid,
+    .stats-grid:has(> :nth-child(4):last-child) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .stat-card {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 14px;
+    }
+
+    .stat-card > * {
+        grid-column: 1;
+    }
+
+    .stat-icon {
+        grid-row: auto;
+        width: 34px;
+        height: 34px;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .stat-value {
+        grid-row: auto;
+        font-size: var(--fs-h2);
+    }
+
+    .stat-label,
+    .stat-change {
+        grid-row: auto;
+    }
+
+    /* Urutan di kartu sempit: ikon, angka, label, keterangan */
+    .stat-icon { order: 0; }
+    .stat-value { order: 1; }
+    .stat-label { order: 2; }
+    .stat-change { order: 3; }
+}
+
+@media (max-width: 340px) {
     .stats-grid,
     .stats-grid:has(> :nth-child(4):last-child) {
         grid-template-columns: minmax(0, 1fr);
