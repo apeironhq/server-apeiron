@@ -185,74 +185,55 @@ include '../includes/header.php';
 ?>
 
 <style>
-/* Settings Tabs */
-.settings-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 24px;
-    background: var(--bg);
-    padding: 4px;
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    overflow-x: auto;
-}
-
-.settings-tab {
-    padding: 12px 24px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    text-decoration: none;
-}
-
-.settings-tab:hover {
-    color: var(--text);
-    background: var(--bg-hover);
-}
-
-.settings-tab.active {
-    background: var(--bg-surface);
-    color: var(--brand-ink);
-    box-shadow: var(--sh-card);
-}
-
-.settings-tab i {
-    font-size: 16px;
-}
-
-/* Settings Section */
+/* Bagian pengaturan: blok di dalam satu kartu, dipisah garis tipis */
 .settings-section {
-    background: var(--card-bg);
-    border-radius: var(--r);
-    box-shadow: var(--sh-card);
-    padding: 24px;
+    padding-bottom: 24px;
     margin-bottom: 24px;
-    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.settings-section:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .settings-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
 }
 
 .settings-section-title i {
-    color: var(--primary);
+    color: var(--text-faint);
+}
+
+/* Tombol simpan di footer kartu */
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+/* Bagian terakhir sebelum tombol simpan tidak perlu garis ganda */
+.settings-section:has(+ .settings-actions),
+.test-email-box:has(+ .settings-actions) {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 8px;
+}
+
+.test-email-box + .settings-actions {
+    margin-top: 24px;
 }
 
 /* Form Grid */
@@ -421,20 +402,10 @@ include '../includes/header.php';
 
 /* Responsive */
 @media (max-width: 768px) {
-    .settings-tabs {
-        flex-wrap: nowrap;
-        padding: 4px;
+    .settings-actions .btn {
+        flex: 1;
     }
-    
-    .settings-tab {
-        padding: 10px 16px;
-        font-size: 13px;
-    }
-    
-    .settings-section {
-        padding: 20px;
-    }
-    
+
     .settings-grid {
         grid-template-columns: 1fr;
     }
@@ -445,30 +416,30 @@ include '../includes/header.php';
 }
 </style>
 
-<div class="card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
-    <div class="card-header" style="background: transparent; border: none; padding: 0 0 20px 0;">
+<div class="card">
+    <div class="card-header">
         <h1 class="card-title">
             <i class="fas fa-cog"></i> Settings
         </h1>
-    </div>
-    
-    <!-- Tabs -->
-    <div class="settings-tabs">
-        <a href="?tab=general" class="settings-tab <?= $current_tab === 'general' ? 'active' : '' ?>">
-            <i class="fas fa-sliders-h"></i> General
-        </a>
-        <a href="?tab=license" class="settings-tab <?= $current_tab === 'license' ? 'active' : '' ?>">
-            <i class="fas fa-id-card"></i> License
-        </a>
-        <a href="?tab=security" class="settings-tab <?= $current_tab === 'security' ? 'active' : '' ?>">
-            <i class="fas fa-shield-alt"></i> Security
-        </a>
-        <a href="?tab=email" class="settings-tab <?= $current_tab === 'email' ? 'active' : '' ?>">
-            <i class="fas fa-envelope"></i> Email
-        </a>
-        <a href="?tab=api" class="settings-tab <?= $current_tab === 'api' ? 'active' : '' ?>">
-            <i class="fas fa-code"></i> API
-        </a>
+
+        <!-- Tabs -->
+        <div class="page-tabs">
+            <a href="?tab=general" class="page-tab <?= $current_tab === 'general' ? 'active' : '' ?>">
+                <i class="fas fa-sliders-h"></i> General
+            </a>
+            <a href="?tab=license" class="page-tab <?= $current_tab === 'license' ? 'active' : '' ?>">
+                <i class="fas fa-id-card"></i> License
+            </a>
+            <a href="?tab=security" class="page-tab <?= $current_tab === 'security' ? 'active' : '' ?>">
+                <i class="fas fa-shield-alt"></i> Security
+            </a>
+            <a href="?tab=email" class="page-tab <?= $current_tab === 'email' ? 'active' : '' ?>">
+                <i class="fas fa-envelope"></i> Email
+            </a>
+            <a href="?tab=api" class="page-tab <?= $current_tab === 'api' ? 'active' : '' ?>">
+                <i class="fas fa-code"></i> API
+            </a>
+        </div>
     </div>
     
     <!-- General Settings -->
@@ -515,9 +486,11 @@ include '../includes/header.php';
             </div>
         </div>
         
-        <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-save"></i> Save Settings
-        </button>
+        <div class="settings-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
     </form>
     <?php endif; ?>
     
@@ -572,9 +545,11 @@ include '../includes/header.php';
             </div>
         </div>
         
-        <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-save"></i> Save Settings
-        </button>
+        <div class="settings-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
     </form>
     <?php endif; ?>
     
@@ -633,9 +608,11 @@ include '../includes/header.php';
             </div>
         </div>
         
-        <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-save"></i> Save Settings
-        </button>
+        <div class="settings-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
     </form>
     <?php endif; ?>
     
@@ -778,8 +755,8 @@ include '../includes/header.php';
             </div>
         </div>
         
-        <div style="margin-top: 24px;">
-            <button type="submit" class="btn btn-primary btn-lg">
+        <div class="settings-actions">
+            <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save"></i> Save Email Settings
             </button>
         </div>
