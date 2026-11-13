@@ -279,7 +279,7 @@ include '../includes/header.php';
     <div class="modal-content">
         <div class="modal-header">
             <h2><i class="fas fa-key"></i> Reset Password</h2>
-            <button class="modal-close" onclick="closeResetPasswordModal()">&times;</button>
+            <button type="button" class="modal-close" aria-label="Tutup" onclick="closeResetPasswordModal()">&times;</button>
         </div>
         <form method="POST" id="resetPasswordForm">
             <input type="hidden" name="action" value="reset_password">
@@ -303,12 +303,10 @@ include '../includes/header.php';
                 </label>
                 <input type="password" name="confirm_password" class="form-control" required minlength="6">
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeResetPasswordModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Reset Password
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="closeResetPasswordModal()">
-                    <i class="fas fa-times"></i> Cancel
                 </button>
             </div>
         </form>

@@ -768,18 +768,6 @@ function showEditModal(license) {
     showModal('editModal');
 }
 
-// Tombol Edit di dalam popup detail
-document.addEventListener('click', function(e) {
-    const btn = e.target.closest('[data-edit-license]');
-    if (!btn) return;
-    e.preventDefault();
-    try {
-        showEditModal(JSON.parse(btn.getAttribute('data-edit-license')));
-    } catch (err) {
-        console.error(err);
-    }
-});
-
 // FEATURE: Bulk Operations JavaScript
 // ID terpilih dikirim sebagai selected_ids[] (array) sesuai yang dibaca server
 function setBulkIds(form, ids) {

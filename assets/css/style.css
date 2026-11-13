@@ -1893,13 +1893,6 @@ pre {
     font-size: var(--fs-label);
 }
 
-.detail-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
-
 /* Form generate di popup: dua kolom */
 .form-section-title {
     display: flex;

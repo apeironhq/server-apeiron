@@ -43,19 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Tombol Edit di popup detail lisensi saat dibuka di luar halaman Licenses
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('[data-edit-license]');
-        if (!btn || typeof window.showEditModal === 'function') return;
-        e.preventDefault();
-        try {
-            const data = JSON.parse(btn.getAttribute('data-edit-license'));
-            window.location.href = 'licenses.php?view=' + encodeURIComponent(data.id);
-        } catch (err) {
-            window.location.href = 'licenses.php';
-        }
-    });
-
     // Popup yang isinya dimuat dari URL: <button data-modal-url="..." data-modal-title="...">
     document.addEventListener('click', function(e) {
         const trigger = e.target.closest('[data-modal-url]');

@@ -71,29 +71,16 @@ try {
     license_detail_error('Error: ' . $e->getMessage());
 }
 
-$edit_payload = [
-    'id' => $license['id'],
-    'status' => $license['status'],
-    'expires' => $license['expires'],
-    'activation_limit' => $license['activation_limit'],
-    'customer_name' => $license['customer_name'],
-    'customer_email' => $license['customer_email'],
-    'notes' => $license['notes'],
-];
 ?>
 <div data-modal-fragment>
-    <div class="detail-actions">
-        <button type="button" class="btn btn-sm btn-secondary" data-copy="<?= htmlspecialchars($license['license_key']) ?>">
-            <i class="fas fa-copy"></i> Copy Key
-        </button>
-        <button type="button" class="btn btn-sm btn-primary" data-edit-license="<?= htmlspecialchars(json_encode($edit_payload)) ?>">
-            <i class="fas fa-edit"></i> Edit
-        </button>
-    </div>
-
+    <?php // Popup ini khusus melihat detail. Edit/suspend/hapus ada di kolom Actions tabel. ?>
     <div class="detail-key">
         <i class="fas fa-key" style="color: var(--text-faint);"></i>
         <code><?= htmlspecialchars($license['license_key']) ?></code>
+        <button type="button" class="btn btn-sm btn-secondary btn-icon" title="Copy license key"
+                data-copy="<?= htmlspecialchars($license['license_key']) ?>">
+            <i class="fas fa-copy"></i>
+        </button>
     </div>
 
     <div class="detail-grid">

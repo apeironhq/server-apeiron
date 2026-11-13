@@ -267,7 +267,7 @@ include '../includes/header.php';
     <div class="modal-content">
         <div class="modal-header">
             <h2><i class="fas fa-ban"></i> Remote Deactivation</h2>
-            <button class="modal-close" onclick="hideModal('deactivateModal')">&times;</button>
+            <button type="button" class="modal-close" aria-label="Tutup" onclick="hideModal('deactivateModal')">&times;</button>
         </div>
         <form method="POST" id="deactivateForm">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
@@ -290,17 +290,15 @@ include '../includes/header.php';
                 <div class="form-text">Reason for deactivation (will be logged)</div>
             </div>
             
-            <div class="alert alert-warning" style="margin: 20px 0;">
+            <div class="alert alert-warning" style="margin: 0;">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>Warning:</strong> This will immediately deactivate the license/activation. This action cannot be undone.
+                <span><strong>Warning:</strong> This will immediately deactivate the license/activation. This action cannot be undone.</span>
             </div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('deactivateModal')">Cancel</button>
                 <button type="submit" class="btn btn-danger">
                     <i class="fas fa-ban"></i> Confirm Deactivation
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="hideModal('deactivateModal')">
-                    <i class="fas fa-times"></i> Cancel
                 </button>
             </div>
         </form>
@@ -374,7 +372,7 @@ function showDeactivateModal(id, target, type) {
     <div class="modal-content">
         <div class="modal-header">
             <h2><i class="fas fa-ban"></i> Remote Deactivation</h2>
-            <button class="modal-close" onclick="hideModal('deactivateModal')">&times;</button>
+            <button type="button" class="modal-close" aria-label="Tutup" onclick="hideModal('deactivateModal')">&times;</button>
         </div>
         <form method="POST" id="deactivateForm">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
@@ -397,17 +395,15 @@ function showDeactivateModal(id, target, type) {
                 <div class="form-text">Reason for deactivation (will be logged)</div>
             </div>
             
-            <div class="alert alert-warning" style="margin: 20px 0;">
+            <div class="alert alert-warning" style="margin: 0;">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>Warning:</strong> This will immediately deactivate the license/activation. This action cannot be undone.
+                <span><strong>Warning:</strong> This will immediately deactivate the license/activation. This action cannot be undone.</span>
             </div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideModal('deactivateModal')">Cancel</button>
                 <button type="submit" class="btn btn-danger">
                     <i class="fas fa-ban"></i> Confirm Deactivation
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="hideModal('deactivateModal')">
-                    <i class="fas fa-times"></i> Cancel
                 </button>
             </div>
         </form>

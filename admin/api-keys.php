@@ -369,7 +369,7 @@ include '../includes/header.php';
 
 <!-- Generate Modal -->
 <div id="generateModal" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-content modal-md">
         <div class="modal-header">
             <h2><i class="fas fa-key"></i> Generate New API Key</h2>
             <button type="button" class="modal-close" onclick="hideModal('generateModal')">&times;</button>
@@ -417,7 +417,7 @@ include '../includes/header.php';
                 <input type="datetime-local" name="expires_at" class="form-control">
             </div>
             
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="hideModal('generateModal')">Cancel</button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-key"></i> Generate API Key
@@ -429,7 +429,7 @@ include '../includes/header.php';
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-content modal-md">
         <div class="modal-header">
             <h2><i class="fas fa-edit"></i> Edit API Key</h2>
             <button type="button" class="modal-close" onclick="hideModal('editModal')">&times;</button>
@@ -475,13 +475,13 @@ include '../includes/header.php';
             </div>
 
             <div class="form-group">
-                <label class="form-control" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" name="is_active" id="edit_is_active" value="1" style="margin: 0;">
-                    <span>Active</span>
+                <label class="check-row">
+                    <input type="checkbox" name="is_active" id="edit_is_active" value="1">
+                    <span><strong>Active</strong> — API key bisa dipakai untuk request</span>
                 </label>
             </div>
 
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="hideModal('editModal')">Cancel</button>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Update API Key
