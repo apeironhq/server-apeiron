@@ -32,6 +32,6 @@
     $is_admin = strpos($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') !== false;
     $base_path = $is_admin ? '../' : '';
     ?>
-    <script src="<?= $base_path ?>assets/js/main.js"></script>
+    <script src="<?= $base_path ?>assets/js/main.js?v=<?= (int) @filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
 </body>
 </html>
